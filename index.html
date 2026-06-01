@@ -21,9 +21,7 @@
         body.presentation-mode .style-controls,
         body.presentation-mode .editable:hover,
         body.presentation-mode .image-resize-handle,
-        body.presentation-mode .image-add-btn,
-        body.presentation-mode .save-indicator,
-        body.presentation-mode .save-counter {
+        body.presentation-mode .image-add-btn {
             display: none !important;
         }
         body.presentation-mode .editable {
@@ -119,12 +117,15 @@
             padding: 12px 18px; border-radius: 15px;
             box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
             z-index: 10000; display: flex; flex-direction: column; gap: 8px;
-            font-size: 12px; transition: opacity 0.3s; min-width: 320px;
+            font-size: 12px; transition: opacity 0.3s; min-width: 260px;
         }
         .style-controls h4 { margin: 0 0 5px 0; color: #333; font-size: 13px; font-weight: 600; border-bottom: 1px solid #eee; padding-bottom: 5px; }
         .style-row { display: flex; align-items: center; gap: 6px; }
         .style-row label { color: #333; font-weight: 500; white-space: nowrap; font-size: 11px; }
-        .style-row input[type="color"] { width: 35px; height: 28px; border: 2px solid #667eea; border-radius: 5px; cursor: pointer; padding: 0; background: none; }
+        .style-row input[type="color"] {
+            width: 35px; height: 28px; border: 2px solid #667eea; border-radius: 5px;
+            cursor: pointer; padding: 0; background: none;
+        }
         .style-row input[type="color"]::-webkit-color-swatch { border: none; border-radius: 3px; }
         .style-row input[type="color"]::-moz-color-swatch { border: none; border-radius: 3px; }
         .style-row button {
@@ -135,35 +136,6 @@
         .style-row button:hover { transform: scale(1.05); }
         .style-row input[type="range"] { width: 70px; cursor: pointer; }
         .style-row .size-value { font-size: 9px; color: #666; min-width: 30px; text-align: right; }
-        
-        /* === INDICADOR DE GUARDADO === */
-        .save-indicator {
-            position: fixed; top: 20px; left: 20px;
-            background: rgba(16, 185, 129, 0.95);
-            color: white; padding: 6px 14px; border-radius: 20px;
-            font-size: 11px; font-weight: 500; z-index: 10001;
-            display: flex; align-items: center; gap: 5px;
-            opacity: 0; transform: translateY(-20px);
-            transition: all 0.3s ease; pointer-events: none;
-        }
-        .save-indicator.show { opacity: 1; transform: translateY(0); }
-        .save-indicator.saving { background: rgba(245, 158, 11, 0.95); animation: pulse 1s infinite; }
-        .save-indicator.error { background: rgba(239, 68, 68, 0.95); }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        /* === CONTADOR DE CAMBIOS === */
-        .save-counter {
-            position: fixed; top: 20px; left: 180px;
-            background: rgba(59, 130, 246, 0.95);
-            color: white; padding: 4px 10px; border-radius: 15px;
-            font-size: 10px; font-weight: 500; z-index: 10001;
-            display: flex; align-items: center; gap: 4px;
-        }
-        .save-counter.hidden { display: none; }
 
         /* === CONTROLES DE VIDEO === */
         .video-controls {
@@ -184,7 +156,10 @@
         .video-controls label { color: #333; font-weight: 500; font-size: 11px; }
 
         /* === ELEMENTOS EDITABLES === */
-        .editable { border: 2px dashed transparent; padding: 8px; cursor: text; transition: all 0.2s; min-height: 30px; user-select: text; }
+        .editable { 
+            border: 2px dashed transparent; padding: 8px; cursor: text; 
+            transition: all 0.2s; min-height: 30px; user-select: text; 
+        }
         .editable:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08); }
         .editable:focus { outline: none; border-color: #fff; background: rgba(255,255,255,0.12); border-radius: 5px; box-shadow: 0 0 0 3px rgba(102,126,234,0.3); }
 
@@ -221,6 +196,7 @@
             font-size: 11px; opacity: 0; transition: opacity 0.2s; z-index: 50;
         }
         .image-container:hover .image-upload-btn { opacity: 1; }
+        
         .image-resize-handle {
             position: absolute; bottom: -8px; right: -8px;
             width: 20px; height: 20px;
@@ -232,6 +208,7 @@
         }
         .image-container:hover .image-resize-handle { opacity: 1; }
         .image-resize-handle:active { transform: scale(1.2); }
+        
         .image-delete-btn {
             position: absolute; top: -10px; left: -10px;
             width: 24px; height: 24px;
@@ -243,6 +220,7 @@
         }
         .image-container:hover .image-delete-btn { opacity: 1; }
         .image-delete-btn:hover { transform: scale(1.1); }
+        
         .image-add-btn {
             position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
             background: linear-gradient(135deg, #10b981, #059669);
@@ -258,10 +236,24 @@
         /* === TIPOGRAFÍA === */
         .title { font-size: 3em; color: white; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); user-select: text; }
         .subtitle { font-size: 1.5em; color: rgba(255,255,255,0.95); text-align: center; user-select: text; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
-        .vocabulary-box { background: rgba(255,255,255,0.95); border-radius: 15px; padding: 30px; max-width: 800px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); user-select: text; }
+        .vocabulary-box { 
+            background: rgba(255,255,255,0.95); 
+            border-radius: 15px; 
+            padding: 30px; 
+            max-width: 800px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+            user-select: text; 
+        }
         .vocabulary-word { font-size: 2em; color: #667eea; font-weight: bold; margin-bottom: 15px; }
         .vocabulary-definition { font-size: 1.2em; color: #333; line-height: 1.6; }
-        .text-box { background: rgba(255,255,255,0.92); padding: 20px; border-radius: 10px; color: #333; min-height: 150px; user-select: text; }
+        .text-box { 
+            background: rgba(255,255,255,0.92); 
+            padding: 20px; 
+            border-radius: 10px; 
+            color: #333; 
+            min-height: 150px; 
+            user-select: text; 
+        }
 
         /* === NAVEGACIÓN === */
         .navigation {
@@ -314,18 +306,13 @@
             .transition-selector { top: 10px; padding: 8px 12px; }
             .transition-selector select { font-size: 11px; padding: 4px 10px; }
             .video-controls { bottom: 70px; flex-wrap: wrap; justify-content: center; }
-            .style-controls { top: auto; bottom: 140px; right: 20px; min-width: 320px; }
-            .save-counter { left: 160px; }
+            .style-controls { top: auto; bottom: 140px; right: 20px; min-width: 260px; }
         }
     </style>
 </head>
 <body>
     <canvas id="transitionCanvas" class="transition-canvas"></canvas>
     <div class="mode-indicator" id="modeIndicator">✨ Modo Edición</div>
-    
-    <!-- === INDICADOR DE GUARDADO === -->
-    <div class="save-indicator" id="saveIndicator">💾 Guardando...</div>
-    <div class="save-counter hidden" id="saveCounter">🔄 Cambios: 0</div>
 
     <!-- Video de fondo -->
     <div class="video-fallback" id="videoFallback"></div>
@@ -459,23 +446,6 @@
             <button id="addImageBtn" title="Agregar imagen" style="flex:1;">➕ Agregar Imagen</button>
             <button id="removeImageBtn" title="Quitar imagen seleccionada" style="flex:1;background:linear-gradient(135deg,#ef4444,#dc2626);">➖ Quitar</button>
         </div>
-        <!-- === BOTONES DE GUARDADO === -->
-        <div class="style-row" style="margin-top:5px;padding-top:5px;border-top:1px solid #eee;">
-            <button id="saveNowBtn" title="Guardar ahora" style="flex:1;background:linear-gradient(135deg,#10b981,#059669);">💾 Guardar</button>
-            <button id="restoreBtn" title="Restaurar última versión" style="flex:1;background:linear-gradient(135deg,#f59e0b,#d97706);">🔄 Restaurar</button>
-        </div>
-        <div class="style-row">
-            <button id="exportBtn" title="Exportar como JSON" style="flex:1;background:linear-gradient(135deg,#3b82f6,#2563eb);">📤 JSON</button>
-            <button id="importBtn" title="Importar desde JSON" style="flex:1;background:linear-gradient(135deg,#8b5cf6,#7c3aed);">📥 JSON</button>
-            <input type="file" id="importFile" accept=".json" style="display:none">
-        </div>
-        <!-- === EXPORTAR COMO HTML === -->
-        <div class="style-row">
-            <button id="exportHtmlBtn" title="Descargar como documento HTML" style="flex:1;background:linear-gradient(135deg,#059669,#047857);font-weight:600;">📄 Descargar HTML</button>
-        </div>
-        <div style="font-size:9px;color:#666;margin-top:3px;text-align:center;">
-            💡 El HTML incluye TODO • Funciona offline • Guarda imágenes
-        </div>
     </div>
 
     <!-- Controles de video -->
@@ -577,7 +547,28 @@
             </div>
         </div>
 
-        <!-- SLIDES 4-12 (estructura similar) -->
+        <!-- SLIDES 4-12 (ESTÁTICOS) - Slide 4 como ejemplo -->
+        <div class="slide" data-slide="4">
+            <div class="slide-content">
+                <h2 class="title editable" style="position:absolute;top:8%;left:50%;transform:translateX(-50%);" contenteditable="true">📚 Slide 4</h2>
+                <div class="two-column" style="position:absolute;top:25%;left:50%;transform:translateX(-50%);width:90%;">
+                    <div class="text-box draggable editable" style="position:relative;min-height:250px;" contenteditable="true">
+                        <span class="drag-handle" title="Arrastrar">🎯</span><h3>AGREGAR TEXTO AQUÍ</h3><p>Contenido editable del slide 4</p>
+                    </div>
+                    <div class="image-container draggable" style="position:relative;height:280px;">
+                        <span class="drag-handle" title="Arrastrar">🎯</span>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='280'%3E%3Crect fill='%23f5f5f5' width='400' height='280'/%3E%3Ctext fill='%23999' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EImagen 4%3C/text%3E%3C/svg%3E" alt="Placeholder">
+                        <button class="image-upload-btn" type="button">📷 Cambiar</button>
+                        <button class="image-delete-btn" title="Eliminar imagen" type="button">✕</button>
+                        <input type="file" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" style="display:none">
+                        <div class="image-resize-handle" title="Arrastrar para redimensionar">↘</div>
+                    </div>
+                </div>
+                <button class="image-add-btn" onclick="addImageToSlide(this)">➕ Agregar Imagen</button>
+            </div>
+        </div>
+
+        <!-- Slides 5-12 (estructura similar) -->
         <!-- Para usar esta presentación completa, copia los slides 5-12 de la versión anterior aquí -->
         
     </div>
@@ -606,392 +597,17 @@
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') { e.preventDefault(); togglePresentationMode(); }
         });
 
-        // === SISTEMA DE GUARDADO ULTRA-SEGURO ===
-        const saveIndicator = document.getElementById('saveIndicator');
-        const saveCounter = document.getElementById('saveCounter');
-        const saveNowBtn = document.getElementById('saveNowBtn');
-        const restoreBtn = document.getElementById('restoreBtn');
-        const exportBtn = document.getElementById('exportBtn');
-        const importBtn = document.getElementById('importBtn');
-        const importFile = document.getElementById('importFile');
-        const exportHtmlBtn = document.getElementById('exportHtmlBtn');
-        
-        let hasUnsavedChanges = false;
-        let unsavedChangeCount = 0;
-        let lastSavedTime = null;
-        let autoSaveTimer = null;
-        let debounceTimer = null;
-
-        // Mostrar indicador de guardado
-        function showSaveIndicator(message, type = 'success') {
-            saveIndicator.textContent = message;
-            saveIndicator.className = 'save-indicator show';
-            if (type === 'saving') saveIndicator.classList.add('saving');
-            if (type === 'error') saveIndicator.classList.add('error');
-            setTimeout(() => saveIndicator.classList.remove('show'), 3000);
+        // === AUTO-GUARDADO ===
+        let saveTimeout;
+        function autoSave() { 
+            if (presentationMode) return; 
+            clearTimeout(saveTimeout); 
+            saveTimeout = setTimeout(() => { 
+                localStorage.setItem('presentationTemplate_v14', document.querySelector('.presentation-container').innerHTML); 
+            }, 2000); 
         }
-
-        // Actualizar contador de cambios
-        function updateSaveCounter() {
-            if (unsavedChangeCount > 0) {
-                saveCounter.textContent = `🔄 Cambios: ${unsavedChangeCount}`;
-                saveCounter.classList.remove('hidden');
-            } else {
-                saveCounter.classList.add('hidden');
-            }
-        }
-
-        // === FUNCIÓN PRINCIPAL: CAPTURAR TODO EL ESTADO ===
-        function captureFullState() {
-            // 1. Capturar contenido HTML de slides
-            const container = document.querySelector('.presentation-container');
-            
-            // 2. Capturar estilos de controles
-            const colors = {
-                text: document.getElementById('textColor').value,
-                bg: document.getElementById('bgColor').value,
-                overlay: document.getElementById('overlayColor').value
-            };
-            
-            // 3. Capturar preferencias
-            const preferences = {
-                font: document.getElementById('fontSelect').value,
-                fontSize: document.getElementById('fontSize').value,
-                transition: document.getElementById('transitionType').value,
-                videoDisabled: videoDisabled.toString(),
-                videoVolume: document.getElementById('videoVolume').value,
-                videoOpacity: document.getElementById('videoOpacity').value
-            };
-            
-            // 4. Capturar posiciones y estilos de elementos arrastrables
-            const elementsState = [];
-            document.querySelectorAll('.draggable').forEach(el => {
-                elementsState.push({
-                    className: el.className,
-                    style: el.style.cssText,
-                    innerHTML: el.innerHTML,
-                    dataset: el.dataset ? {...el.dataset} : null
-                });
-            });
-            
-            // 5. Capturar texto de elementos editables
-            const editableState = [];
-            document.querySelectorAll('.editable').forEach(el => {
-                editableState.push({
-                    className: el.className,
-                    textContent: el.textContent,
-                    innerHTML: el.innerHTML,
-                    style: el.style.cssText
-                });
-            });
-            
-            return {
-                containerHTML: container.innerHTML,
-                colors,
-                preferences,
-                elementsState,
-                editableState,
-                timestamp: new Date().toISOString(),
-                version: '1.7'
-            };
-        }
-
-        // Guardar presentación en localStorage
-        function savePresentation(manual = false) {
-            if (presentationMode) return;
-            
-            showSaveIndicator('💾 Guardando...', 'saving');
-            
-            try {
-                // Capturar TODO el estado actual
-                const data = captureFullState();
-                
-                // Guardar en localStorage
-                localStorage.setItem('presentationTemplate_v17', JSON.stringify(data));
-                
-                // Actualizar estado
-                lastSavedTime = new Date();
-                hasUnsavedChanges = false;
-                unsavedChangeCount = 0;
-                updateSaveCounter();
-                
-                // Mostrar confirmación
-                const timeStr = lastSavedTime.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'});
-                showSaveIndicator(manual ? `✅ Guardado ${timeStr}` : `💾 Auto-guardado ${timeStr}`);
-                
-                // Guardar backup adicional cada 5 guardados
-                const backupCount = parseInt(localStorage.getItem('presentationBackupCount') || '0') + 1;
-                if (backupCount >= 5) {
-                    localStorage.setItem('presentationBackup_v17', JSON.stringify(data));
-                    localStorage.setItem('presentationBackupCount', '0');
-                } else {
-                    localStorage.setItem('presentationBackupCount', backupCount.toString());
-                }
-                
-            } catch (e) {
-                console.error('Error al guardar:', e);
-                showSaveIndicator('❌ Error al guardar', 'error');
-                // Intentar guardar solo lo esencial si falla
-                try {
-                    const minimalData = {
-                        containerHTML: document.querySelector('.presentation-container').innerHTML,
-                        timestamp: new Date().toISOString()
-                    };
-                    localStorage.setItem('presentationTemplate_minimal', JSON.stringify(minimalData));
-                    showSaveIndicator('⚠️ Guardado básico');
-                } catch (e2) {
-                    alert('❌ No se pudo guardar. Exporta como HTML para respaldo.');
-                }
-            }
-        }
-
-        // Auto-guardado con debounce (espera 1s después del último cambio)
-        function scheduleAutoSave() {
-            if (presentationMode) return;
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                if (hasUnsavedChanges) {
-                    savePresentation();
-                }
-            }, 1000); // Espera 1 segundo después del último cambio
-        }
-
-        // Marcar como no guardado
-        function markAsUnsaved() {
-            hasUnsavedChanges = true;
-            unsavedChangeCount++;
-            updateSaveCounter();
-            scheduleAutoSave();
-        }
-
-        // Restaurar última versión guardada
-        function restorePresentation() {
-            if (!confirm('⚠️ ¿Restaurar la última versión guardada? Se perderán los cambios no guardados.')) return;
-            
-            try {
-                const saved = localStorage.getItem('presentationTemplate_v17');
-                if (!saved) { alert('❌ No hay versión guardada'); return; }
-                
-                const data = JSON.parse(saved);
-                
-                // Restaurar contenido principal
-                document.querySelector('.presentation-container').innerHTML = data.containerHTML;
-                
-                // Restaurar colores
-                if (data.colors) {
-                    if (data.colors.text) { document.getElementById('textColor').value = data.colors.text; applyTextColor(data.colors.text); }
-                    if (data.colors.bg) { document.getElementById('bgColor').value = data.colors.bg; applyBgColor(data.colors.bg); }
-                    if (data.colors.overlay) { document.getElementById('overlayColor').value = data.colors.overlay; applyOverlayColor(data.colors.overlay); }
-                }
-                
-                // Restaurar preferencias
-                if (data.preferences) {
-                    if (data.preferences.font) { document.getElementById('fontSelect').value = data.preferences.font; applyFont(data.preferences.font); }
-                    if (data.preferences.fontSize) { 
-                        document.getElementById('fontSize').value = data.preferences.fontSize; 
-                        document.getElementById('fontSizeValue').textContent = data.preferences.fontSize + 'px'; 
-                    }
-                    if (data.preferences.transition) { 
-                        document.getElementById('transitionType').value = data.preferences.transition; 
-                        currentTransition = data.preferences.transition; 
-                    }
-                    if (data.preferences.videoDisabled === 'true') { 
-                        videoDisabled = true; 
-                        bgVideo.classList.add('hidden'); 
-                        videoFallback.classList.add('hidden'); 
-                    }
-                    if (data.preferences.videoVolume) document.getElementById('videoVolume').value = data.preferences.videoVolume;
-                    if (data.preferences.videoOpacity) document.getElementById('videoOpacity').value = data.preferences.videoOpacity;
-                }
-                
-                // Re-inicializar funcionalidades
-                initDraggables();
-                setupImageEvents();
-                setupEditableEvents();
-                
-                // Resetear estado
-                hasUnsavedChanges = false;
-                unsavedChangeCount = 0;
-                updateSaveCounter();
-                
-                showSaveIndicator('🔄 Restaurado correctamente');
-                
-            } catch (e) {
-                console.error('Error al restaurar:', e);
-                alert('❌ Error al restaurar la presentación');
-            }
-        }
-
-        // Configurar eventos para elementos editables al cargar
-        function setupEditableEvents() {
-            document.querySelectorAll('.editable').forEach(el => {
-                // Remover listeners antiguos para evitar duplicados
-                el.removeEventListener('input', markAsUnsaved);
-                el.removeEventListener('blur', savePresentation);
-                
-                // Agregar nuevos listeners
-                el.addEventListener('input', markAsUnsaved);
-                el.addEventListener('blur', () => savePresentation());
-            });
-        }
-
-        // Exportar presentación a archivo JSON
-        function exportPresentation() {
-            try {
-                const data = captureFullState();
-                
-                const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `presentacion_backup_${new Date().toISOString().slice(0,10)}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-                showSaveIndicator('📤 JSON exportado');
-                
-            } catch (e) {
-                console.error('Error al exportar:', e);
-                showSaveIndicator('❌ Error al exportar', 'error');
-            }
-        }
-
-        // Importar presentación desde archivo JSON
-        function importPresentation(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    if (!confirm('⚠️ ¿Importar esta presentación? Se reemplazará la actual.')) return;
-                    
-                    const data = JSON.parse(e.target.result);
-                    
-                    // Restaurar contenido
-                    document.querySelector('.presentation-container').innerHTML = data.containerHTML;
-                    
-                    // Restaurar colores
-                    if (data.colors) {
-                        if (data.colors.text) { document.getElementById('textColor').value = data.colors.text; applyTextColor(data.colors.text); }
-                        if (data.colors.bg) { document.getElementById('bgColor').value = data.colors.bg; applyBgColor(data.colors.bg); }
-                        if (data.colors.overlay) { document.getElementById('overlayColor').value = data.colors.overlay; applyOverlayColor(data.colors.overlay); }
-                    }
-                    
-                    // Restaurar preferencias
-                    if (data.preferences) {
-                        if (data.preferences.font) { document.getElementById('fontSelect').value = data.preferences.font; applyFont(data.preferences.font); }
-                        if (data.preferences.fontSize) { document.getElementById('fontSize').value = data.preferences.fontSize; document.getElementById('fontSizeValue').textContent = data.preferences.fontSize + 'px'; }
-                        if (data.preferences.transition) { document.getElementById('transitionType').value = data.preferences.transition; currentTransition = data.preferences.transition; }
-                        if (data.preferences.videoDisabled === 'true') { videoDisabled = true; bgVideo.classList.add('hidden'); videoFallback.classList.add('hidden'); }
-                        if (data.preferences.videoVolume) document.getElementById('videoVolume').value = data.preferences.videoVolume;
-                        if (data.preferences.videoOpacity) document.getElementById('videoOpacity').value = data.preferences.videoOpacity;
-                    }
-                    
-                    initDraggables();
-                    setupImageEvents();
-                    setupEditableEvents();
-                    savePresentation(true);
-                    showSaveIndicator('📥 Importado correctamente');
-                    
-                } catch (err) {
-                    console.error('Error al importar:', err);
-                    alert('❌ Archivo no válido o corrupto');
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        // Exportar como HTML completo (incluye imágenes en base64)
-        function exportAsHTML() {
-            if (presentationMode) return;
-            
-            showSaveIndicator('📄 Generando HTML...', 'saving');
-            
-            try {
-                // Obtener el HTML actual completo
-                const fullHTML = document.documentElement.outerHTML;
-                
-                // Crear blob con el HTML
-                const blob = new Blob([fullHTML], {type: 'text/html'});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                
-                // Nombre del archivo con fecha
-                const dateStr = new Date().toISOString().slice(0,10);
-                a.href = url;
-                a.download = `mi_presentacion_${dateStr}.html`;
-                
-                // Trigger download
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                showSaveIndicator('✅ HTML descargado');
-                
-                // Mostrar mensaje informativo
-                setTimeout(() => {
-                    alert('🎉 ¡Listo!\n\n✅ Tu presentación se ha descargado como "mi_presentacion_YYYY-MM-DD.html"\n\n📁 GUÁRDALO EN UN LUGAR SEGURO:\n• Google Drive\n• USB\n• Email a ti mismo\n\n🔓 PARA USARLO:\n1. Haz doble clic en el archivo .html\n2. Se abrirá en tu navegador\n3. ¡Tu presentación estará EXACTAMENTE como la dejaste!\n\n💡 Tip: Este archivo funciona SIN INTERNET e incluye tus imágenes');
-                }, 500);
-                
-            } catch (e) {
-                console.error('Error al exportar HTML:', e);
-                showSaveIndicator('❌ Error al exportar', 'error');
-                alert('❌ No se pudo generar el archivo HTML. Intenta nuevamente.');
-            }
-        }
-
-        // Event listeners para botones de guardado
-        saveNowBtn.addEventListener('click', () => {
-            savePresentation(true);
-            unsavedChangeCount = 0;
-            updateSaveCounter();
-        });
-        restoreBtn.addEventListener('click', restorePresentation);
-        exportBtn.addEventListener('click', exportPresentation);
-        importBtn.addEventListener('click', () => importFile.click());
-        importFile.addEventListener('change', (e) => { if (e.target.files[0]) importPresentation(e.target.files[0]); });
-        exportHtmlBtn.addEventListener('click', exportAsHTML);
-
-        // Detectar cambios para marcar como no guardado - MÁS EVENTOS
-        document.addEventListener('input', (e) => {
-            if (e.target.isContentEditable && !presentationMode) markAsUnsaved();
-        });
-        document.addEventListener('change', (e) => {
-            if (!presentationMode && !e.target.closest('#importFile')) markAsUnsaved();
-        });
-        document.addEventListener('mouseup', (e) => {
-            if (e.target.classList.contains('image-resize-handle') || e.target.closest('.draggable')) markAsUnsaved();
-        });
-        document.addEventListener('touchend', (e) => {
-            if (e.target.classList.contains('image-resize-handle') || e.target.closest('.draggable')) markAsUnsaved();
-        });
-
-        // Guardado forzado antes de acciones destructivas
-        function forceSaveBeforeAction(actionName) {
-            return new Promise((resolve) => {
-                if (hasUnsavedChanges) {
-                    showSaveIndicator(`💾 Guardando antes de ${actionName}...`, 'saving');
-                    savePresentation(true);
-                    setTimeout(resolve, 500); // Esperar a que termine el guardado
-                } else {
-                    resolve();
-                }
-            });
-        }
-
-        // Confirmar antes de cerrar si hay cambios sin guardar
-        window.addEventListener('beforeunload', (e) => {
-            if (hasUnsavedChanges && !presentationMode) {
-                // Forzar guardado rápido antes de cerrar
-                try {
-                    const data = captureFullState();
-                    localStorage.setItem('presentationTemplate_v17', JSON.stringify(data));
-                } catch (err) {
-                    console.log('No se pudo guardar antes de cerrar');
-                }
-                
-                e.preventDefault();
-                e.returnValue = '⚠️ Tienes ' + unsavedChangeCount + ' cambios. Tu trabajo se guardará automáticamente.';
-                return e.returnValue;
-            }
+        document.addEventListener('input', e => { 
+            if (e.target.isContentEditable && !presentationMode) autoSave(); 
         });
 
         // === VIDEO DE FONDO ===
@@ -1023,19 +639,20 @@
         }
         function showFallback() { if (videoDisabled) return; bgVideo.classList.add('error', 'hidden'); videoFallback.classList.remove('hidden'); applyOverlayColor(document.getElementById('overlayColor').value); }
         function toggleVideoBackground() {
-            videoDisabled = !videoDisabled; markAsUnsaved();
+            videoDisabled = !videoDisabled;
             if (videoDisabled) {
                 bgVideo.classList.add('hidden'); videoFallback.classList.add('hidden');
                 const opacity = parseFloat(videoOpacity.value), alpha = Math.round(opacity * 255).toString(16).padStart(2, '0');
                 videoOverlay.style.background = `linear-gradient(135deg, ${document.getElementById('overlayColor').value}${alpha} 0%, ${adjustColor(document.getElementById('overlayColor').value, -20)}${alpha} 100%)`;
                 toggleVideoBtn.textContent = '🎬 Con Video'; removeVideoBtn.textContent = '✅ Video Quitado';
+                localStorage.setItem('videoBackgroundDisabled', 'true');
             } else {
                 bgVideo.classList.remove('hidden'); videoFallback.classList.remove('hidden');
                 if (videoLoaded) videoFallback.classList.add('hidden');
                 toggleVideoBtn.textContent = '⏯️ Video'; removeVideoBtn.textContent = '🚫 Sin Video';
+                localStorage.setItem('videoBackgroundDisabled', 'false');
                 if (!videoLoaded) tryLoadVideo();
             }
-            localStorage.setItem('videoBackgroundDisabled', videoDisabled);
         }
         removeVideoBtn.addEventListener('click', toggleVideoBackground);
         bgVideo.addEventListener('loadeddata', () => { if (!videoLoaded && !videoDisabled) { videoLoaded = true; videoFallback.classList.add('hidden'); bgVideo.classList.remove('loading'); } });
@@ -1046,11 +663,10 @@
             else { bgVideo.play().catch(()=>{}); bgVideo.classList.remove('paused'); toggleVideoBtn.textContent = '⏸️ Pause'; }
             isVideoPlaying = !isVideoPlaying;
         });
-        videoVolume.addEventListener('input', (e) => { if (videoLoaded && !videoDisabled) bgVideo.volume = e.target.value; markAsUnsaved(); });
+        videoVolume.addEventListener('input', (e) => { if (videoLoaded && !videoDisabled) bgVideo.volume = e.target.value; });
         videoOpacity.addEventListener('input', (e) => {
             const opacity = parseFloat(e.target.value), alpha = Math.round(opacity * 255).toString(16).padStart(2, '0');
             videoOverlay.style.background = `linear-gradient(135deg, ${document.getElementById('overlayColor').value}${alpha} 0%, ${adjustColor(document.getElementById('overlayColor').value, -20)}${alpha} 100%)`;
-            markAsUnsaved();
         });
         uploadVideoBtn.addEventListener('click', () => videoFileInput.click());
         videoFileInput.addEventListener('change', (e) => {
@@ -1060,7 +676,7 @@
                 const url = URL.createObjectURL(file); bgVideo.src = url; bgVideo.load();
                 bgVideo.play().then(() => {
                     videoLoaded = true; videoFallback.classList.add('hidden'); bgVideo.classList.remove('paused', 'loading', 'error', 'hidden');
-                    toggleVideoBtn.textContent = '⏸️ Pause'; isVideoPlaying = true; markAsUnsaved();
+                    toggleVideoBtn.textContent = '⏸️ Pause'; isVideoPlaying = true; autoSave();
                 }).catch(() => showFallback());
             }
         });
@@ -1085,18 +701,19 @@
             if (input === textColorInput) applyTextColor(e.target.value);
             if (input === bgColorInput) applyBgColor(e.target.value);
             if (input === overlayColorInput) applyOverlayColor(e.target.value);
-            markAsUnsaved();
+            autoSave();
         }));
         [resetTextBtn, resetBgBtn, resetOverlayBtn].forEach((btn, i) => btn.addEventListener('click', () => {
             const inputs = [textColorInput, bgColorInput, overlayColorInput], keys = ['text', 'bg', 'overlay'], funcs = [applyTextColor, applyBgColor, applyOverlayColor];
-            inputs[i].value = defaultColors[keys[i]]; funcs[i](defaultColors[keys[i]]); markAsUnsaved();
+            inputs[i].value = defaultColors[keys[i]]; funcs[i](defaultColors[keys[i]]); autoSave();
         }));
+        function saveColors() { localStorage.setItem('presentationColors', JSON.stringify({ text: textColorInput.value, bg: bgColorInput.value, overlay: overlayColorInput.value })); }
 
         // === FUENTE ===
         const fontSelect = document.getElementById('fontSelect'), resetFontBtn = document.getElementById('resetFont'), defaultFont = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
         function applyFont(fontFamily) { document.querySelectorAll('.editable, .title, .subtitle, .vocabulary-word, .vocabulary-definition, .text-box, h2.title, .nav-btn, .slide-counter, .style-controls, .video-controls, .transition-selector').forEach(el => el.style.fontFamily = fontFamily); }
-        fontSelect.addEventListener('change', (e) => { applyFont(e.target.value); localStorage.setItem('presentationFont', e.target.value); markAsUnsaved(); });
-        resetFontBtn.addEventListener('click', () => { fontSelect.value = defaultFont; applyFont(defaultFont); localStorage.setItem('presentationFont', defaultFont); markAsUnsaved(); });
+        fontSelect.addEventListener('change', (e) => { applyFont(e.target.value); localStorage.setItem('presentationFont', e.target.value); autoSave(); });
+        resetFontBtn.addEventListener('click', () => { fontSelect.value = defaultFont; applyFont(defaultFont); localStorage.setItem('presentationFont', defaultFont); autoSave(); });
         function loadFont() { const saved = localStorage.getItem('presentationFont'); if (saved) { fontSelect.value = saved; applyFont(saved); } }
 
         // === TAMAÑO DE LETRA ===
@@ -1113,66 +730,53 @@
             const size = parseInt(e.target.value); fontSizeValue.textContent = size + 'px';
             if (selectedTextElement && !presentationMode) selectedTextElement.style.fontSize = size + 'px';
             else document.querySelectorAll('.editable, .title, .subtitle, .vocabulary-word, .vocabulary-definition, .text-box, h2.title, .nav-btn, .slide-counter').forEach(el => el.style.fontSize = size + 'px');
-            localStorage.setItem('presentationFontSize', size); markAsUnsaved();
+            localStorage.setItem('presentationFontSize', size); autoSave();
         });
         function loadFontSize() { const saved = localStorage.getItem('presentationFontSize'); if (saved) { fontSizeSlider.value = saved; fontSizeValue.textContent = saved + 'px'; } }
 
         // === IMÁGENES - FUNCIONES CORREGIDAS ===
         const addImageBtn = document.getElementById('addImageBtn'), removeImageBtnCtrl = document.getElementById('removeImageBtn');
         
+        // Crear contenedor de imagen con eventos configurados
         function createImageContainer(top, left, width, height) {
             const container = document.createElement('div');
             container.className = 'image-container draggable';
             container.style.cssText = `position:absolute;top:${top};left:${left};width:${width}px;height:${height}px;`;
             container.innerHTML = `<span class="drag-handle" title="Arrastrar">🎯</span><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}'%3E%3Crect fill='%23ddd' width='${width}' height='${height}'/%3E%3Ctext fill='%23999' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3E📷 Nueva Imagen%3C/text%3E%3C/svg%3E" alt="Placeholder"><button class="image-upload-btn" type="button">📷 Cambiar</button><button class="image-delete-btn" title="Eliminar imagen" type="button">✕</button><input type="file" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" style="display:none"><div class="image-resize-handle" title="Arrastrar para redimensionar">↘</div>`;
+            
+            // Configurar eventos para el nuevo contenedor
+            const uploadBtn = container.querySelector('.image-upload-btn');
+            const fileInput = container.querySelector('input[type="file"]');
+            const deleteBtn = container.querySelector('.image-delete-btn');
+            
+            // Click en botón de subir → abrir selector de archivos
+            uploadBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!presentationMode) fileInput.click();
+            });
+            
+            // Cambio en input file → procesar imagen
+            fileInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    handleImageUpload(this, container);
+                }
+            });
+            
+            // Click en eliminar → borrar contenedor
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                removeImageContainer(deleteBtn);
+            });
+            
             return container;
         }
         
-        // Configurar eventos para imágenes existentes al cargar
-        function setupImageEvents() {
-            document.querySelectorAll('.image-container').forEach(container => {
-                const uploadBtn = container.querySelector('.image-upload-btn');
-                const fileInput = container.querySelector('input[type="file"]');
-                const deleteBtn = container.querySelector('.image-delete-btn');
-                
-                if (uploadBtn && fileInput) {
-                    uploadBtn.onclick = null;
-                    uploadBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        if (!presentationMode) fileInput.click();
-                    }, { once: true });
-                }
-                
-                if (fileInput) {
-                    fileInput.onchange = null;
-                    fileInput.addEventListener('change', function(e) {
-                        if (this.files && this.files[0]) {
-                            handleImageUpload(this, container);
-                        }
-                    }, { once: true });
-                }
-                
-                if (deleteBtn) {
-                    deleteBtn.onclick = null;
-                    deleteBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        forceSaveBeforeAction('eliminar imagen').then(() => {
-                            if (confirm('¿Eliminar esta imagen?')) {
-                                container.remove();
-                                if (selectedImageContainer === container) selectedImageContainer = null;
-                                markAsUnsaved();
-                            }
-                        });
-                    }, { once: true });
-                }
-            });
-        }
-        
-        // === FUNCIÓN CORREGIDA PARA SUBIR IMÁGENES ===
+        // === FUNCIÓN PRINCIPAL: SUBIR IMAGEN ===
         function handleImageUpload(input, container) {
             const file = input.files[0];
             if (!file) return;
             
+            // Validar tipo de archivo
             const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
             if (!validTypes.includes(file.type)) {
                 alert('❌ Formato no soportado. Usa JPG, PNG, GIF o WebP');
@@ -1180,15 +784,13 @@
                 return;
             }
             
+            // Validar tamaño (máx 5MB)
             const maxSize = 5 * 1024 * 1024;
             if (file.size > maxSize) {
-                if (!confirm(`⚠️ La imagen es grande (${Math.round(file.size/1024/1024)}MB). ¿Continuar?`)) {
-                    input.value = '';
-                    return;
-                }
+                alert(`⚠️ La imagen es muy grande (${Math.round(file.size/1024/1024)}MB). Máximo 5MB.`);
+                input.value = '';
+                return;
             }
-            
-            showSaveIndicator('🖼️ Procesando imagen...', 'saving');
             
             const reader = new FileReader();
             
@@ -1196,32 +798,41 @@
                 try {
                     const imgElement = container.querySelector('img');
                     if (imgElement) {
-                        imgElement.src = e.target.result;
+                        // Efecto de transición suave
                         imgElement.style.opacity = '0';
                         imgElement.onload = function() {
                             imgElement.style.transition = 'opacity 0.3s';
                             imgElement.style.opacity = '1';
                         };
+                        imgElement.src = e.target.result; // Imagen en base64
                     }
-                    showSaveIndicator('✅ Imagen actualizada');
-                    markAsUnsaved();
+                    autoSave(); // Guardar cambios
                 } catch (err) {
                     console.error('Error al cargar imagen:', err);
-                    showSaveIndicator('❌ Error al cargar imagen', 'error');
                     alert('❌ No se pudo cargar la imagen. Intenta con otra.');
                 }
+                // Resetear input para permitir seleccionar la misma imagen nuevamente
                 input.value = '';
             };
             
             reader.onerror = function() {
-                showSaveIndicator('❌ Error al leer archivo', 'error');
                 alert('❌ Error al leer el archivo. Intenta nuevamente.');
                 input.value = '';
             };
             
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(file); // Convertir imagen a base64
         }
         
+        // Función wrapper para compatibilidad con onclick en HTML
+        function uploadImage(btn) {
+            if (presentationMode) return;
+            const fileInput = btn.nextElementSibling;
+            if (fileInput && fileInput.tagName === 'INPUT' && fileInput.type === 'file') {
+                fileInput.click();
+            }
+        }
+        
+        // Agregar nueva imagen al slide actual
         function addImageToSlide(btn) { 
             if (presentationMode) return; 
             const slideContent = btn.closest('.slide-content'); 
@@ -1229,8 +840,7 @@
             newImg.style.transform = 'translateX(-50%)'; 
             slideContent.appendChild(newImg); 
             initDraggables(); 
-            setupImageEvents();
-            markAsUnsaved(); 
+            autoSave(); 
         }
         
         addImageBtn.addEventListener('click', () => { 
@@ -1242,33 +852,28 @@
                 newImg.style.transform = 'translateX(-50%)'; 
                 slideContent.appendChild(newImg); 
                 initDraggables(); 
-                setupImageEvents();
-                markAsUnsaved(); 
+                autoSave(); 
             } 
         });
         
         removeImageBtnCtrl.addEventListener('click', () => { 
             if (presentationMode || !selectedImageContainer) return; 
-            forceSaveBeforeAction('eliminar imagen').then(() => {
-                if (confirm('¿Eliminar esta imagen?')) { 
-                    selectedImageContainer.remove(); 
-                    selectedImageContainer = null; 
-                    document.querySelectorAll('.image-container').forEach(c => c.classList.remove('selected')); 
-                    markAsUnsaved(); 
-                } 
-            });
+            if (confirm('¿Eliminar esta imagen?')) { 
+                selectedImageContainer.remove(); 
+                selectedImageContainer = null; 
+                document.querySelectorAll('.image-container').forEach(c => c.classList.remove('selected')); 
+                autoSave(); 
+            } 
         });
         
         function removeImageContainer(btn) { 
             if (presentationMode) return; 
             const container = btn.closest('.image-container'); 
-            forceSaveBeforeAction('eliminar imagen').then(() => {
-                if (confirm('¿Eliminar esta imagen?')) { 
-                    container.remove(); 
-                    if (selectedImageContainer === container) selectedImageContainer = null; 
-                    markAsUnsaved(); 
-                } 
-            });
+            if (confirm('¿Eliminar esta imagen?')) { 
+                container.remove(); 
+                if (selectedImageContainer === container) selectedImageContainer = null; 
+                autoSave(); 
+            } 
         }
 
         // === REDIMENSIONAR IMÁGENES ===
@@ -1285,8 +890,8 @@
             });
         });
         
-        imgWidthSlider.addEventListener('input', (e) => { if (selectedImageContainer && !presentationMode) { selectedImageContainer.style.width = e.target.value + 'px'; widthValue.textContent = e.target.value; markAsUnsaved(); } });
-        imgHeightSlider.addEventListener('input', (e) => { if (selectedImageContainer && !presentationMode) { selectedImageContainer.style.height = e.target.value + 'px'; heightValue.textContent = e.target.value; markAsUnsaved(); } });
+        imgWidthSlider.addEventListener('input', (e) => { if (selectedImageContainer && !presentationMode) { selectedImageContainer.style.width = e.target.value + 'px'; widthValue.textContent = e.target.value; autoSave(); } });
+        imgHeightSlider.addEventListener('input', (e) => { if (selectedImageContainer && !presentationMode) { selectedImageContainer.style.height = e.target.value + 'px'; heightValue.textContent = e.target.value; autoSave(); } });
         
         document.addEventListener('mousedown', (e) => {
             if (e.target.classList.contains('image-resize-handle') && !presentationMode) {
@@ -1297,7 +902,7 @@
             }
         });
         
-        function resizeDrag(e) { if (!isResizing || !selectedImageContainer) return; const dx = e.clientX - resizeStartX, dy = e.clientY - resizeStartY, newW = Math.max(100, Math.min(800, resizeStartW + dx)), newH = Math.max(80, Math.min(600, resizeStartH + dy)); selectedImageContainer.style.width = newW + 'px'; selectedImageContainer.style.height = newH + 'px'; imgWidthSlider.value = newW; imgHeightSlider.value = newH; widthValue.textContent = newW; heightValue.textContent = newH; markAsUnsaved(); }
+        function resizeDrag(e) { if (!isResizing || !selectedImageContainer) return; const dx = e.clientX - resizeStartX, dy = e.clientY - resizeStartY, newW = Math.max(100, Math.min(800, resizeStartW + dx)), newH = Math.max(80, Math.min(600, resizeStartH + dy)); selectedImageContainer.style.width = newW + 'px'; selectedImageContainer.style.height = newH + 'px'; imgWidthSlider.value = newW; imgHeightSlider.value = newH; widthValue.textContent = newW; heightValue.textContent = newH; autoSave(); }
         function resizeStop() { isResizing = false; document.removeEventListener('mousemove', resizeDrag); document.removeEventListener('mouseup', resizeStop); }
         
         document.addEventListener('click', (e) => { if (!e.target.closest('.image-container') && !e.target.closest('.style-controls')) { document.querySelectorAll('.image-container').forEach(c => c.classList.remove('selected')); selectedImageContainer = null; } });
@@ -1305,7 +910,7 @@
         // === DRAG & DROP ===
         let draggedElement = null, offsetX = 0, offsetY = 0;
         function initDraggables() { document.querySelectorAll('.draggable').forEach(elem => { const handle = elem.querySelector('.drag-handle'); if (handle) { handle.addEventListener('mousedown', startDrag); handle.addEventListener('touchstart', startDrag, {passive:false}); } }); }
-        function startDrag(e) { if (presentationMode) return; e.preventDefault(); e.stopPropagation(); if (document.activeElement?.isContentEditable) return; draggedElement = this.closest('.draggable'); if (!draggedElement) return; const clientX = e.type==='touchstart'?e.touches[0].clientX:e.clientX, clientY = e.type==='touchstart'?e.touches[0].clientY:e.clientY, rect = draggedElement.getBoundingClientRect(); offsetX = clientX - rect.left; offsetY = clientY - rect.top; draggedElement.classList.add('dragging'); draggedElement.style.transition = 'none'; document.addEventListener('mousemove', drag); document.addEventListener('mouseup', stopDrag); document.addEventListener('touchmove', drag, {passive:false}); document.addEventListener('touchend', stopDrag); markAsUnsaved(); }
+        function startDrag(e) { if (presentationMode) return; e.preventDefault(); e.stopPropagation(); if (document.activeElement?.isContentEditable) return; draggedElement = this.closest('.draggable'); if (!draggedElement) return; const clientX = e.type==='touchstart'?e.touches[0].clientX:e.clientX, clientY = e.type==='touchstart'?e.touches[0].clientY:e.clientY, rect = draggedElement.getBoundingClientRect(); offsetX = clientX - rect.left; offsetY = clientY - rect.top; draggedElement.classList.add('dragging'); draggedElement.style.transition = 'none'; document.addEventListener('mousemove', drag); document.addEventListener('mouseup', stopDrag); document.addEventListener('touchmove', drag, {passive:false}); document.addEventListener('touchend', stopDrag); autoSave(); }
         function drag(e) { if (!draggedElement) return; e.preventDefault(); const clientX = e.type==='touchmove'?e.touches[0].clientX:e.clientX, clientY = e.type==='touchmove'?e.touches[0].clientY:e.clientY, parentRect = draggedElement.parentElement.getBoundingClientRect(); draggedElement.style.left = (clientX - parentRect.left - offsetX) + 'px'; draggedElement.style.top = (clientY - parentRect.top - offsetY) + 'px'; draggedElement.style.transform = 'none'; draggedElement.style.right = 'auto'; draggedElement.style.bottom = 'auto'; }
         function stopDrag() { if (draggedElement) { draggedElement.classList.remove('dragging'); draggedElement.style.transition = 'box-shadow 0.2s'; draggedElement = null; } document.removeEventListener('mousemove', drag); document.removeEventListener('mouseup', stopDrag); document.removeEventListener('touchmove', drag); document.removeEventListener('touchend', stopDrag); }
 
@@ -1329,7 +934,7 @@
         }
         function nextSlide() { showSlide(currentSlideIndex + 1); }
         function previousSlide() { showSlide(currentSlideIndex - 1); }
-        function changeTransition(type) { currentTransition = type; localStorage.setItem('presentationTransition', type); markAsUnsaved(); }
+        function changeTransition(type) { currentTransition = type; localStorage.setItem('presentationTransition', type); autoSave(); }
         document.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') return; if (e.key === 'ArrowRight') nextSlide(); if (e.key === 'ArrowLeft') previousSlide(); });
 
         // === CANVAS EFECTOS ===
@@ -1353,55 +958,18 @@
             
             document.querySelectorAll('.slide').forEach(slide => slide.classList.add(`transition-${currentTransition}`));
             initDraggables();
-            setupImageEvents();
-            setupEditableEvents();
             
             const savedT = localStorage.getItem('presentationTransition');
             if (savedT) { currentTransition = savedT; document.getElementById('transitionType').value = savedT; }
             
             // Cargar presentación guardada si existe
-            const saved = localStorage.getItem('presentationTemplate_v17');
-            if (saved) {
-                try {
-                    const data = JSON.parse(saved);
-                    document.querySelector('.presentation-container').innerHTML = data.containerHTML;
-                    
-                    if (data.colors) {
-                        if (data.colors.text) { document.getElementById('textColor').value = data.colors.text; applyTextColor(data.colors.text); }
-                        if (data.colors.bg) { document.getElementById('bgColor').value = data.colors.bg; applyBgColor(data.colors.bg); }
-                        if (data.colors.overlay) { document.getElementById('overlayColor').value = data.colors.overlay; applyOverlayColor(data.colors.overlay); }
-                    }
-                    if (data.preferences) {
-                        if (data.preferences.font) { document.getElementById('fontSelect').value = data.preferences.font; applyFont(data.preferences.font); }
-                        if (data.preferences.fontSize) { document.getElementById('fontSize').value = data.preferences.fontSize; document.getElementById('fontSizeValue').textContent = data.preferences.fontSize + 'px'; }
-                        if (data.preferences.transition) { document.getElementById('transitionType').value = data.preferences.transition; currentTransition = data.preferences.transition; }
-                        if (data.preferences.videoVolume) document.getElementById('videoVolume').value = data.preferences.videoVolume;
-                        if (data.preferences.videoOpacity) document.getElementById('videoOpacity').value = data.preferences.videoOpacity;
-                    }
-                    
-                    initDraggables();
-                    setupImageEvents();
-                    setupEditableEvents();
-                    
-                    if (data.timestamp) {
-                        const date = new Date(data.timestamp);
-                        const timeStr = date.toLocaleString('es-ES', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
-                        showSaveIndicator(`✅ Cargado: ${timeStr}`);
-                    }
-                } catch (e) { 
-                    console.log('No se pudo cargar la versión guardada'); 
-                    const backup = localStorage.getItem('presentationBackup_v17');
-                    if (backup) {
-                        try {
-                            const data = JSON.parse(backup);
-                            document.querySelector('.presentation-container').innerHTML = data.containerHTML;
-                            initDraggables();
-                            setupImageEvents();
-                            setupEditableEvents();
-                            showSaveIndicator('🔄 Cargado desde backup');
-                        } catch (e2) { console.log('Backup también falló'); }
-                    }
-                }
+            const saved = localStorage.getItem('presentationTemplate_v14');
+            if (saved && !presentationMode && confirm('🔄 ¿Cargar presentación guardada?')) { 
+                document.querySelector('.presentation-container').innerHTML = saved; 
+                initDraggables(); 
+                loadColors(); 
+                loadFont(); 
+                loadFontSize(); 
             }
         });
     </script>
