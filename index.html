@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentación Profesional Interactiva - 12 Slides</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            overflow: hidden;
+            user-select: none;
+        }
+        
+        /* === MODO PRESENTACIÓN (Ctrl+F) === */
+        body.presentation-mode .drag-handle,
+        body.presentation-mode .image-upload-btn,
+        body.presentation-mode .video-controls,
+        body.presentation-mode .transition-selector,
+        body.presentation-mode .style-controls,
+        body.presentation-mode .editable:hover,
+        body.presentation-mode .image-resize-handle,
+        body.presentation-mode .image-add-btn {
+            display: none !important;
+        }
+        body.presentation-mode .editable {
+            cursor: default !important;
+            border: none !important;
+            pointer-events: none !important;
+        }
+        body.presentation-mode .draggable { cursor: default !important; }
+        body.presentation-mode .image-container { border: none !important; }
+        
+        /* === VIDEO DE FONDO - CORREGIDO PARA QUE SIEMPRE SE VEA === */
+        .video-background {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: 0; pointer-events: none;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .video-background.paused { opacity: 0.4; }
+        .video-background.loading { opacity: 0.2; }
+        .video-background.error { display: none; }
+        .video-background.hidden { display: none !important; }
+        
+        .video-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.4) 0%, rgba(118, 75, 162, 0.4) 100%);
+            z-index: 1; pointer-events: none; transition: background 0.3s;
+        }
+        
+        .video-fallback {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 0; pointer-events: none;
+            animation: gradientShift 15s ease infinite;
+            background-size: 400% 400%;
+        }
+        .video-fallback.hidden { display: none !important; }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* === SLIDE BASE - TRANSPARENTE PARA VER EL VIDEO === */
+        .slide {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100vh;
+            padding: 40px; overflow: hidden; opacity: 0; visibility: hidden;
+            pointer-events: none; transform-style: preserve-3d;
+            will-change: transform, opacity, filter, clip-path;
+            z-index: 2; 
+            background: transparent !important;
+        }
+        .slide.active { opacity: 1; visibility: visible; pointer-events: auto; z-index: 10; }
+
+        /* === TRANSICIONES === */
+        .transition-page-fade.slide { transform: translateX(30px) scale(0.98); filter: blur(2px); transition: all 0.9s cubic-bezier(0.4, 0, 0.2, 1); }
+        .transition-page-fade.slide.active { transform: translateX(0) scale(1); filter: blur(0); }
+        .transition-page-fade.slide.prev { transform: translateX(-30px) scale(0.98); filter: blur(2px); }
+        .transition-fade.slide { opacity: 0; transition: opacity 0.8s ease-in-out; }
+        .transition-fade.slide.active { opacity: 1; }
+        .transition-ken-burns.slide { transform: scale(1.15); opacity: 0; transition: all 1.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        .transition-ken-burns.slide.active { transform: scale(1); opacity: 1; }
+        .transition-ken-burns.slide.prev { transform: scale(0.9); opacity: 0; }
+        .transition-page-curl.slide { transform-origin: right center; transform: perspective(1000px) rotateY(-25deg) translateX(40px) scale(0.95); opacity: 0; transition: all 1.1s cubic-bezier(0.645, 0.045, 0.355, 1); }
+        .transition-page-curl.slide.active { transform: perspective(1000px) rotateY(0) translateX(0) scale(1); opacity: 1; }
+        .transition-page-curl.slide.prev { transform-origin: left center; transform: perspective(1000px) rotateY(25deg) translateX(-40px) scale(0.95); opacity: 0; }
+        .transition-parallax.slide { transform: translateX(100%) scale(0.95); opacity: 0; transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .transition-parallax.slide.active { transform: translateX(0) scale(1); opacity: 1; }
+        .transition-parallax.slide.prev { transform: translateX(-100%) scale(0.95); opacity: 0; }
+        .transition-slide-push.slide { transform: translateX(100%); opacity: 0.7; transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .transition-slide-push.slide.active { transform: translateX(0); opacity: 1; }
+        .transition-slide-push.slide.prev { transform: translateX(-30%); opacity: 0.3; }
+        .transition-diamond.slide { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); transition: clip-path 1.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); opacity: 0; }
+        .transition-diamond.slide.active { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); opacity: 1; }
+        .transition-curtain.slide { clip-path: inset(0 0 100% 0); transition: clip-path 1.6s cubic-bezier(0.645, 0.045, 0.355, 1); opacity: 0; }
+        .transition-curtain.slide.active { clip-path: inset(0 0 0 0); opacity: 1; }
+        .transition-morph.slide { clip-path: circle(0% at 50% 50%); transition: clip-path 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55); opacity: 0; }
+        .transition-morph.slide.active { clip-path: circle(150% at 50% 50%); opacity: 1; }
+        .transition-ripple.slide { clip-path: circle(0% at 50% 50%); transition: clip-path 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; }
+        .transition-ripple.slide.active { clip-path: circle(120% at 50% 50%); opacity: 1; }
+        .transition-zoom-out-in.slide { transform: scale(0.3); opacity: 0; filter: blur(10px); transition: all 1s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        .transition-zoom-out-in.slide.active { transform: scale(1); opacity: 1; filter: blur(0); }
+        .transition-vortex.slide { transform: rotateZ(-180deg) scale(0.5) rotateX(45deg); opacity: 0; transition: all 1.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        .transition-vortex.slide.active { transform: rotateZ(0) scale(1) rotateX(0); opacity: 1; }
+        .transition-blinds.slide { clip-path: inset(0 50% 0 50%); transition: clip-path 1.2s cubic-bezier(0.77, 0, 0.175, 1); opacity: 0; }
+        .transition-blinds.slide.active { clip-path: inset(0 0% 0 0%); opacity: 1; }
+        .transition-barn-doors.slide { clip-path: polygon(50% 0, 50% 0, 50% 100%, 50% 100%); transition: clip-path 1.5s cubic-bezier(0.645, 0.045, 0.355, 1); opacity: 0; }
+        .transition-barn-doors.slide.active { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); opacity: 1; }
+        .transition-shutter.slide { clip-path: polygon(0 45%, 100% 45%, 100% 55%, 0 55%); transition: clip-path 1.1s cubic-bezier(0.77, 0, 0.175, 1); opacity: 0; }
+        .transition-shutter.slide.active { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); opacity: 1; }
+        .transition-zoom-blur.slide { transform: scale(3); filter: blur(20px); opacity: 0; transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .transition-zoom-blur.slide.active { transform: scale(1); filter: blur(0); opacity: 1; }
+        .transition-zoom-blur.slide.prev { transform: scale(0.5); filter: blur(10px); opacity: 0; }
+        .transition-flip-3d.slide { transform: rotateY(-180deg) scale(0.8); opacity: 0; backface-visibility: hidden; transition: all 1.2s cubic-bezier(0.645, 0.045, 0.355, 1); }
+        .transition-flip-3d.slide.active { transform: rotateY(0) scale(1); opacity: 1; }
+        .transition-flip-3d.slide.prev { transform: rotateY(180deg) scale(0.8); opacity: 0; }
+        .transition-swirl.slide { transform: rotate(-720deg) scale(0); opacity: 0; transition: all 1.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        .transition-swirl.slide.active { transform: rotate(0) scale(1); opacity: 1; }
+        .transition-swirl.slide.prev { transform: rotate(720deg) scale(0); opacity: 0; }
+        .transition-glitch.slide { animation: glitch-anim 0.3s infinite; opacity: 0; transition: opacity 0.5s; }
+        .transition-glitch.slide.active { animation: none; opacity: 1; }
+        @keyframes glitch-anim {
+            0% { transform: translate(0); filter: hue-rotate(0); }
+            25% { transform: translate(-3px, 3px); filter: hue-rotate(90deg); }
+            50% { transform: translate(3px, -3px); filter: hue-rotate(180deg); }
+            75% { transform: translate(-3px, -3px); filter: hue-rotate(270deg); }
+            100% { transform: translate(0); filter: hue-rotate(360deg); }
+        }
+        .transition-explosion.slide { transform: scale(0) rotate(-180deg); opacity: 0; transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .transition-explosion.slide.active { transform: scale(1) rotate(0); opacity: 1; }
+        .transition-matrix.slide { filter: hue-rotate(90deg) brightness(2); opacity: 0; transition: all 1.5s ease-out; }
+        .transition-matrix.slide.active { filter: hue-rotate(0) brightness(1); opacity: 1; }
+
+        .transition-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10000; }
+        .slide-content { position: relative; z-index: 10; height: 100%; }
+
+        /* === CONTROLES DE ESTILO (COLORES) === */
+        .style-controls {
+            position: fixed; top: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 18px; border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            z-index: 10000; display: flex; flex-direction: column; gap: 8px;
+            font-size: 12px; transition: opacity 0.3s; min-width: 260px;
+        }
+        .style-controls h4 { margin: 0 0 5px 0; color: #333; font-size: 13px; font-weight: 600; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .style-row { display: flex; align-items: center; gap: 6px; }
+        .style-row label { color: #333; font-weight: 500; white-space: nowrap; font-size: 11px; }
+        .style-row input[type="color"] {
+            width: 35px; height: 28px; border: 2px solid #667eea; border-radius: 5px;
+            cursor: pointer; padding: 0; background: none;
+        }
+        .style-row input[type="color"]::-webkit-color-swatch { border: none; border-radius: 3px; }
+        .style-row input[type="color"]::-moz-color-swatch { border: none; border-radius: 3px; }
+        .style-row button {
+            background: linear-gradient(135deg, #667eea, #764ba2); color: white;
+            border: none; padding: 4px 10px; border-radius: 12px;
+            cursor: pointer; font-size: 10px; transition: all 0.2s;
+        }
+        .style-row button:hover { transform: scale(1.05); }
+        .style-row input[type="range"] { width: 70px; cursor: pointer; }
+        .style-row .size-value { font-size: 9px; color: #666; min-width: 30px; text-align: right; }
+
+        /* === CONTROLES DE VIDEO === */
+        .video-controls {
+            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95); padding: 8px 15px;
+            border-radius: 30px; box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
+            z-index: 10000; display: flex; align-items: center; gap: 8px;
+            font-size: 12px; transition: opacity 0.3s;
+        }
+        .video-controls button {
+            background: linear-gradient(135deg, #667eea, #764ba2); color: white;
+            border: none; padding: 6px 12px; border-radius: 18px;
+            cursor: pointer; font-size: 11px; transition: all 0.2s;
+        }
+        .video-controls button:hover { transform: scale(1.05); }
+        .video-controls button.no-video { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .video-controls input[type="range"] { width: 90px; }
+        .video-controls label { color: #333; font-weight: 500; font-size: 11px; }
+
+        /* === ELEMENTOS EDITABLES === */
+        .editable { 
+            border: 2px dashed transparent; padding: 8px; cursor: text; 
+            transition: all 0.2s; min-height: 30px; user-select: text; 
+        }
+        .editable:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08); }
+        .editable:focus { outline: none; border-color: #fff; background: rgba(255,255,255,0.12); border-radius: 5px; box-shadow: 0 0 0 3px rgba(102,126,234,0.3); }
+
+        /* === ELEMENTOS ARRASTRABLES === */
+        .draggable { position: absolute; transition: box-shadow 0.2s; }
+        .draggable:hover { box-shadow: 0 5px 25px rgba(0,0,0,0.2); }
+        .draggable.dragging { opacity: 0.9; z-index: 1000; cursor: grabbing; }
+
+        /* === DRAG HANDLE === */
+        .drag-handle {
+            position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(135deg, #667eea, #764ba2); color: white;
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: grab; font-size: 14px; opacity: 0; transition: opacity 0.2s, transform 0.2s;
+            z-index: 100; box-shadow: 0 3px 10px rgba(0,0,0,0.3); user-select: none;
+        }
+        .draggable:hover .drag-handle { opacity: 1; transform: translateX(-50%) scale(1.1); }
+        .drag-handle:active { cursor: grabbing; transform: translateX(-50%) scale(0.95); }
+
+        /* === IMÁGENES === */
+        .image-container {
+            position: absolute; border: 3px dashed rgba(255,255,255,0.3);
+            border-radius: 10px; overflow: hidden; min-width: 200px; min-height: 150px;
+            background: rgba(0,0,0,0.2); transition: border-color 0.2s;
+        }
+        .image-container:hover { border-color: rgba(255,255,255,0.8); }
+        .image-container.selected { border-color: #667eea; border-style: solid; box-shadow: 0 0 0 3px rgba(102,126,234,0.3); }
+        .image-container img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .image-upload-btn {
+            position: absolute; bottom: 10px; right: 10px;
+            background: rgba(255,255,255,0.95); border: none;
+            padding: 6px 12px; border-radius: 5px; cursor: pointer;
+            font-size: 11px; opacity: 0; transition: opacity 0.2s; z-index: 50;
+        }
+        .image-container:hover .image-upload-btn { opacity: 1; }
+        
+        /* === HANDLE PARA REDIMENSIONAR IMAGEN === */
+        .image-resize-handle {
+            position: absolute; bottom: -8px; right: -8px;
+            width: 20px; height: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: 2px solid white; border-radius: 50%;
+            cursor: nwse-resize; z-index: 60;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; color: white; opacity: 0; transition: opacity 0.2s;
+        }
+        .image-container:hover .image-resize-handle { opacity: 1; }
+        .image-resize-handle:active { transform: scale(1.2); }
+        
+        /* === BOTÓN PARA ELIMINAR IMAGEN === */
+        .image-delete-btn {
+            position: absolute; top: -10px; left: -10px;
+            width: 24px; height: 24px;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border: 2px solid white; border-radius: 50%;
+            cursor: pointer; z-index: 60;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; color: white; opacity: 0; transition: opacity 0.2s;
+        }
+        .image-container:hover .image-delete-btn { opacity: 1; }
+        .image-delete-btn:hover { transform: scale(1.1); }
+        
+        /* === BOTÓN PARA AGREGAR IMAGEN === */
+        .image-add-btn {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white; border: none; padding: 8px 16px;
+            border-radius: 25px; cursor: pointer; font-size: 12px;
+            display: flex; align-items: center; gap: 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 40; opacity: 0; transition: opacity 0.3s;
+        }
+        .slide-content:hover .image-add-btn { opacity: 1; }
+        .image-add-btn:hover { transform: translateX(-50%) scale(1.05); }
+
+        /* === TIPOGRAFÍA === */
+        .title { font-size: 3em; color: white; text-align: center; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); user-select: text; }
+        .subtitle { font-size: 1.5em; color: rgba(255,255,255,0.95); text-align: center; user-select: text; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
+        .vocabulary-box { 
+            background: rgba(255,255,255,0.95); 
+            border-radius: 15px; 
+            padding: 30px; 
+            max-width: 800px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+            user-select: text; 
+        }
+        .vocabulary-word { font-size: 2em; color: #667eea; font-weight: bold; margin-bottom: 15px; }
+        .vocabulary-definition { font-size: 1.2em; color: #333; line-height: 1.6; }
+        .text-box { 
+            background: rgba(255,255,255,0.92); 
+            padding: 20px; 
+            border-radius: 10px; 
+            color: #333; 
+            min-height: 150px; 
+            user-select: text; 
+        }
+
+        /* === NAVEGACIÓN === */
+        .navigation {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(255,255,255,0.95); padding: 12px 25px;
+            border-radius: 50px; box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+            z-index: 10000; display: flex; align-items: center; gap: 15px;
+            transition: opacity 0.3s;
+        }
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2); color: white;
+            border: none; padding: 10px 22px; border-radius: 25px;
+            cursor: pointer; font-size: 15px; font-weight: 500; transition: all 0.2s;
+        }
+        .nav-btn:hover { transform: scale(1.05); box-shadow: 0 4px 15px rgba(102,126,234,0.4); }
+        .nav-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+        .slide-counter { font-weight: 600; color: #333; min-width: 70px; text-align: center; font-size: 14px; }
+
+        /* === SELECTOR DE TRANSICIÓN === */
+        .transition-selector {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(255,255,255,0.95); padding: 10px 18px;
+            border-radius: 50px; box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            z-index: 10000; display: flex; align-items: center; gap: 8px;
+            max-width: 95%; overflow-x: auto; transition: opacity 0.3s;
+        }
+        .transition-selector label { font-weight: 600; color: #333; font-size: 12px; white-space: nowrap; }
+        .transition-selector select {
+            padding: 5px 12px; border: 2px solid #667eea; border-radius: 20px;
+            font-size: 12px; cursor: pointer; background: white; color: #667eea; font-weight: 500; outline: none;
+        }
+
+        /* === INDICADOR DE MODO === */
+        .mode-indicator {
+            position: fixed; top: 20px; right: 20px;
+            background: rgba(102, 126, 234, 0.95); color: white;
+            padding: 8px 16px; border-radius: 25px;
+            font-size: 12px; font-weight: 600; z-index: 10001;
+            opacity: 0; transform: translateY(-20px);
+            transition: all 0.3s ease; pointer-events: none;
+        }
+        .mode-indicator.show { opacity: 1; transform: translateY(0); }
+        .mode-indicator.presentation { background: rgba(239, 68, 68, 0.95); }
+
+        /* === LAYOUTS === */
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; }
+        @media (max-width: 768px) {
+            .title { font-size: 2em; }
+            .two-column { grid-template-columns: 1fr; }
+            .transition-selector { top: 10px; padding: 8px 12px; }
+            .transition-selector select { font-size: 11px; padding: 4px 10px; }
+            .video-controls { bottom: 70px; flex-wrap: wrap; justify-content: center; }
+            .style-controls { top: auto; bottom: 140px; right: 20px; min-width: 260px; }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="transitionCanvas" class="transition-canvas"></canvas>
+    <div class="mode-indicator" id="modeIndicator">✨ Modo Edición</div>
+
+    <!-- Video de fondo con fallback mejorado - SIEMPRE VISIBLE -->
+    <div class="video-fallback" id="videoFallback"></div>
+    <video class="video-background" id="bgVideo" autoplay loop muted playsinline preload="auto" poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1920' height='1080'%3E%3Crect fill='%23667eea' width='1920' height='1080'/%3E%3C/svg%3E">
+        <source src="https://cdn.pixabay.com/video/2023/08/15/173843-861842991_large.mp4" type="video/mp4">
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-abstract-technology-network-background-2688-large.mp4" type="video/mp4">
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-abstract-technology-network-background-2688-medium.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay" id="videoOverlay"></div>
+
+    <!-- Controles de estilo (colores) -->
+    <div class="style-controls">
+        <h4>🎨 Estilos</h4>
+        <div class="style-row">
+            <label>🔤 Fuente:</label>
+            <select id="fontSelect" style="padding:3px 6px;border:2px solid #667eea;border-radius:5px;font-size:9px;cursor:pointer;background:white;color:#667eea;font-weight:500;outline:none;max-width:180px;">
+                <optgroup label="✨ NickGen PRO • Juvenil">
+                    <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif">🔤 Predeterminada</option>
+                    <option value="Arial, 'Helvetica Neue', Helvetica, sans-serif">🔤 Arial Classic</option>
+                    <option value="'Comic Sans MS', 'Comic Neue', cursive">🎨 Comic Style</option>
+                    <option value="'Brush Script MT', 'Brush Script Std', cursive">✍️ Brush Handwritten</option>
+                    <option value="'Lucida Console', Monaco, monospace">💻 Tech Monospace</option>
+                    <option value="'Palatino Linotype', Palatino, serif">📜 Elegant Serif</option>
+                    <option value="'Trebuchet MS', 'Lucida Sans Unicode', sans-serif">🌟 Modern Sans</option>
+                    <option value="'Impact', Haettenschweiler, 'Arial Narrow Bold', sans-serif">⚡ Bold Impact</option>
+                </optgroup>
+                <optgroup label="🎮 Gaming & Esports">
+                    <option value="'Courier New', Courier, monospace">🎮 Courier Gaming</option>
+                    <option value="'Consolas', 'Lucida Console', monospace">⌨️ Consolas Code</option>
+                    <option value="'Press Start 2P', 'VT323', monospace">👾 Pixel Retro</option>
+                    <option value="'Orbitron', 'Rajdhani', sans-serif">🚀 Sci-Fi Futuro</option>
+                    <option value="'Bebas Neue', 'Oswald', sans-serif">🏆 Esports Bold</option>
+                    <option value="'Russo One', 'Exo 2', sans-serif">🎯 Gamer Pro</option>
+                    <option value="'Audiowide', 'Electrolize', sans-serif">⚡ Neon Tech</option>
+                    <option value="'Rajdhani', 'Orbitron', sans-serif">🔮 Cyberpunk</option>
+                </optgroup>
+                <optgroup label="✍️ Handwritten & Script">
+                    <option value="'Dancing Script', 'Caveat', cursive">💃 Dancing Script</option>
+                    <option value="'Pacifico', 'Kaushan Script', cursive">🌊 Pacifico Flow</option>
+                    <option value="'Indie Flower', 'Caveat Brush', cursive">🌸 Indie Flower</option>
+                    <option value="'Shadows Into Light', 'Kalam', cursive">☁️ Shadows Light</option>
+                    <option value="'Amatic SC', 'Caveat', cursive">✏️ Amatic Hand</option>
+                    <option value="'Caveat', 'Dawning of a New Day', cursive">🌅 Caveat Soft</option>
+                    <option value="'Kalam', 'Architects Daughter', cursive">📓 Kalam Notes</option>
+                    <option value="'Satisfy', 'Great Vibes', cursive">💫 Satisfy Elegant</option>
+                </optgroup>
+                <optgroup label="🎨 Display & Decorative">
+                    <option value="'Lobster', 'Pacifico', cursive">🦞 Lobster Bold</option>
+                    <option value="'Fredoka One', 'Bungee', sans-serif">🎈 Fredoka Fun</option>
+                    <option value="'Bungee Shade', 'Bungee Inline', sans-serif">🎭 Bungee 3D</option>
+                    <option value="'Creepster', 'Nosifer', cursive">👻 Creepster Horror</option>
+                    <option value="'Chewy', 'Baloo 2', cursive">🍬 Chewy Cute</option>
+                    <option value="'Luckiest Guy', 'Bungee', sans-serif">🍀 Luckiest Bold</option>
+                    <option value="'Righteous', 'Exo 2', sans-serif">✨ Righteous Glow</option>
+                    <option value="'Monoton', 'Audiowide', sans-serif">🌀 Monoton Minimal</option>
+                </optgroup>
+                <optgroup label="🌈 Social Media Trendy">
+                    <option value="'Poppins', 'Nunito', sans-serif">📱 Poppins Modern</option>
+                    <option value="'Montserrat', 'Raleway', sans-serif">🎬 Montserrat Clean</option>
+                    <option value="'Quicksand', 'Nunito Sans', sans-serif">☁️ Quicksand Soft</option>
+                    <option value="'Nunito', 'Comfortaa', sans-serif">💜 Nunito Round</option>
+                    <option value="'Comfortaa', 'Varela Round', sans-serif">🫧 Comfortaa Bubble</option>
+                    <option value="'Varela Round', 'Nunito', sans-serif">🔘 Varela Smooth</option>
+                    <option value="'Rubik', 'Manrope', sans-serif">🧩 Rubik Geometric</option>
+                    <option value="'Manrope', 'Inter', sans-serif">🔷 Manrope Sharp</option>
+                </optgroup>
+                <optgroup label="🎭 Bold & Impact">
+                    <option value="'Anton', 'Bebas Neue', sans-serif">🔥 Anton Ultra Bold</option>
+                    <option value="'Bebas Neue', 'Anton', sans-serif">📢 Bebas Neue Tall</option>
+                    <option value="'Oswald', 'Roboto Condensed', sans-serif">⬆️ Oswald Condensed</option>
+                    <option value="'Roboto Condensed', 'Oswald', sans-serif">🗞️ Roboto Compact</option>
+                    <option value="'Black Ops One', 'Russo One', sans-serif">🎖️ Black Ops Military</option>
+                    <option value="'Russo One', 'Exo 2', sans-serif">🛡️ Russo Strong</option>
+                    <option value="'Exo 2', 'Orbitron', sans-serif">🔋 Exo Futuristic</option>
+                    <option value="'Teko', 'Rajdhani', sans-serif">📐 Teko Technical</option>
+                </optgroup>
+                <optgroup label="🌍 Internacional Unicode">
+                    <option value="system-ui, -apple-system, sans-serif">🌐 System UI</option>
+                    <option value="'MS Gothic', 'Hiragino Sans', sans-serif">🇯🇵 Japonés</option>
+                    <option value="'Malgun Gothic', 'Nanum Gothic', sans-serif">🇰🇷 Coreano</option>
+                    <option value="'Traditional Arabic', 'Simplified Arabic', serif">🇸🇦 Árabe</option>
+                    <option value="'Times New Roman', 'PT Serif', serif">🇷🇺 Cirílico</option>
+                    <option value="'Arial Unicode MS', 'Lucida Sans Unicode', sans-serif">🌏 Unicode Full</option>
+                    <option value="'Segoe UI Emoji', 'Apple Color Emoji', sans-serif">😀 Emoji Support</option>
+                    <option value="'Symbola', 'Noto Color Emoji', sans-serif">🎭 Symbola Glyphs</option>
+                </optgroup>
+                <optgroup label="🎪 Fun & Playful">
+                    <option value="'Bubblegum Sans', 'Fredoka One', cursive">🫧 Bubblegum Fun</option>
+                    <option value="'Baloo 2', 'Baloo Paaji 2', cursive">🧸 Baloo Cute</option>
+                    <option value="'Chewy', 'Bungee Shade', cursive">🍭 Chewy Sweet</option>
+                    <option value="'Gloria Hallelujah', 'Caveat', cursive">🎵 Gloria Script</option>
+                    <option value="'Permanent Marker', 'Caveat Brush', cursive">🖍️ Marker Hand</option>
+                    <option value="'Rock Salt', 'Caveat', cursive">🧂 Rock Salt Grunge</option>
+                    <option value="'Schoolbell', 'Kalam', cursive">🔔 Schoolbell Kids</option>
+                    <option value="'Gochi Hand', 'Architects Daughter', cursive">✋ Gochi Playful</option>
+                </optgroup>
+            </select>
+            <button id="resetFont" title="Restablecer fuente">↺</button>
+        </div>
+        <div class="style-row">
+            <label>🔠 Tamaño:</label>
+            <input type="range" id="fontSize" min="8" max="72" value="16" title="Tamaño de letra">
+            <span class="size-value" id="fontSizeValue">16px</span>
+        </div>
+        <div class="style-row">
+            <label>📏 Img:</label>
+            <input type="range" id="imgWidth" min="100" max="800" value="450" title="Ancho de imagen">
+            <span class="size-value" id="widthValue">450</span>
+        </div>
+        <div class="style-row">
+            <label>📐 Img:</label>
+            <input type="range" id="imgHeight" min="80" max="600" value="280" title="Alto de imagen">
+            <span class="size-value" id="heightValue">280</span>
+        </div>
+        <div class="style-row">
+            <label>📝 Texto:</label>
+            <input type="color" id="textColor" value="#ffffff" title="Color del texto">
+            <button id="resetText">↺</button>
+        </div>
+        <div class="style-row">
+            <label>🗂️ Fondo:</label>
+            <input type="color" id="bgColor" value="#667eea" title="Color de fondo">
+            <button id="resetBg">↺</button>
+        </div>
+        <div class="style-row">
+            <label>🎬 Overlay:</label>
+            <input type="color" id="overlayColor" value="#667eea" title="Color del overlay">
+            <button id="resetOverlay">↺</button>
+        </div>
+        <div class="style-row" style="margin-top:5px;padding-top:5px;border-top:1px solid #eee;">
+            <button id="addImageBtn" title="Agregar imagen" style="flex:1;">➕ Agregar Imagen</button>
+            <button id="removeImageBtn" title="Quitar imagen seleccionada" style="flex:1;background:linear-gradient(135deg,#ef4444,#dc2626);">➖ Quitar</button>
+        </div>
+    </div>
+
+    <!-- Controles de video -->
+    <div class="video-controls">
+        <button id="toggleVideo" title="Pausar/Reproducir">⏯️ Video</button>
+        <label>🔊 <input type="range" id="videoVolume" min="0" max="1" step="0.1" value="0"></label>
+        <label>✨ <input type="range" id="videoOpacity" min="0" max="1" step="0.05" value="0.4"></label>
+        <button id="uploadVideo" title="Subir tu video">📁 Subir</button>
+        <button id="removeVideo" class="no-video" title="Quitar video de fondo">🚫 Sin Video</button>
+        <input type="file" id="videoFile" accept="video/*" style="display:none">
+    </div>
+
+    <!-- Selector de Transición -->
+    <div class="transition-selector">
+        <label for="transitionType">🎬 Transición:</label>
+        <select id="transitionType" onchange="changeTransition(this.value)">
+            <optgroup label="✨ Profesionales">
+                <option value="page-fade" selected>📄 Page Fade</option>
+                <option value="fade">✨ Fade Clásico</option>
+                <option value="ken-burns">🎥 Ken Burns</option>
+                <option value="page-curl">📖 Page Curl</option>
+                <option value="parallax">🌄 Parallax</option>
+                <option value="slide-push">➡️ Slide Push</option>
+            </optgroup>
+            <optgroup label="🎨 Creativas">
+                <option value="diamond">💎 Diamond</option>
+                <option value="curtain">🎪 Curtain</option>
+                <option value="morph">🦋 Morph</option>
+                <option value="ripple">💧 Ripple</option>
+                <option value="zoom-out-in">🔍 Zoom Out/In</option>
+                <option value="vortex">🌀 Vortex 3D</option>
+            </optgroup>
+            <optgroup label="⚡ Impactantes">
+                <option value="blinds">🎭 Blinds</option>
+                <option value="barn-doors">🚪 Barn Doors</option>
+                <option value="shutter">📷 Shutter</option>
+                <option value="zoom-blur">🌪️ Zoom Blur</option>
+                <option value="flip-3d">🔄 Flip 3D</option>
+                <option value="swirl">🌀 Swirl</option>
+                <option value="glitch">⚡ Glitch</option>
+                <option value="explosion">💥 Explosión</option>
+                <option value="matrix">🟢 Matrix</option>
+            </optgroup>
+        </select>
+    </div>
+
+    <div class="presentation-container" id="presentationContainer">
+        <!-- SLIDE 1 -->
+        <div class="slide active" data-slide="1">
+            <div class="slide-content">
+                <h1 class="title editable draggable" style="top:20%;left:50%;transform:translateX(-50%);width:90%;" contenteditable="true">
+                    <span class="drag-handle" title="Arrastrar">🎯</span>Presentación Profesional Interactiva
+                </h1>
+                <p class="subtitle editable draggable" style="top:38%;left:50%;transform:translateX(-50%);width:80%;" contenteditable="true">
+                    <span class="drag-handle" title="Arrastrar">🎯</span>12 Slides - Ctrl+F para Modo Presentación
+                </p>
+                <div class="image-container draggable" style="top:55%;left:50%;transform:translateX(-50%);width:450px;height:280px;">
+                    <span class="drag-handle" title="Arrastrar">🎯</span>
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='450' height='280'%3E%3Crect fill='%23ddd' width='450' height='280'/%3E%3Ctext fill='%23999' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3E📷 Imagen Principal%3C/text%3E%3C/svg%3E" alt="Placeholder">
+                    <button class="image-upload-btn" onclick="uploadImage(this)">📷 Cambiar</button>
+                    <button class="image-delete-btn" title="Eliminar imagen" onclick="removeImageContainer(this)">✕</button>
+                    <input type="file" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+                    <div class="image-resize-handle" title="Arrastrar para redimensionar">↘</div>
+                </div>
+                <button class="image-add-btn" onclick="addImageToSlide(this)">➕ Agregar Imagen</button>
+            </div>
+        </div>
+
+        <!-- SLIDE 2 -->
+        <div class="slide" data-slide="2">
+            <div class="slide-content">
+                <h2 class="title editable" style="position:absolute;top:8%;left:50%;transform:translateX(-50%);" contenteditable="true">📚 Vocabulary Word</h2>
+                <div class="vocabulary-box draggable" style="position:absolute;top:25%;left:50%;transform:translateX(-50%);">
+                    <span class="drag-handle" title="Arrastrar">🎯</span>
+                    <div class="vocabulary-word editable" contenteditable="true">Massive Data / Data Masiva</div>
+                    <div class="vocabulary-definition editable" contenteditable="true">Extremely large datasets that require advanced processing methods.</div>
+                </div>
+                <div class="image-container draggable" style="top:55%;right:15%;width:380px;height:280px;">
+                    <span class="drag-handle" title="Arrastrar">🎯</span>
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='380' height='280'%3E%3Crect fill='%23e0e7ff' width='380' height='280'/%3E%3Ctext fill='%23667eea' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3E📊 Agregar Imagen%3C/text%3E%3C/svg%3E" alt="Placeholder">
+                    <button class="image-upload-btn" onclick="uploadImage(this)">📷 Cambiar</button>
+                    <button class="image-delete-btn" title="Eliminar imagen" onclick="removeImageContainer(this)">✕</button>
+                    <input type="file" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+                    <div class="image-resize-handle" title="Arrastrar para redimensionar">↘</div>
+                </div>
+                <button class="image-add-btn" onclick="addImageToSlide(this)">➕ Agregar Imagen</button>
+            </div>
+        </div>
+
+        <!-- SLIDE 3 -->
+        <div class="slide" data-slide="3">
+            <div class="slide-content">
+                <h2 class="title editable" style="position:absolute;top:8%;left:50%;transform:translateX(-50%);" contenteditable="true">Portability</h2>
+                <div class="text-box draggable editable" style="position:absolute;top:25%;left:8%;width:45%;min-height:200px;" contenteditable="true">
+                    <span class="drag-handle" title="Arrastrar">🎯</span>
+                    <h3 style="margin-bottom:15px;color:#667eea;">Definición</h3>
+                    <p>AGREGAR TEXTO AQUÍ - Describe el concepto de portabilidad</p>
+                </div>
+                <div class="image-container draggable" style="top:25%;right:8%;width:42%;height:320px;">
+                    <span class="drag-handle" title="Arrastrar">🎯</span>
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='320'%3E%3Crect fill='%23f0f4ff' width='420' height='320'/%3E%3Ctext fill='%23764ba2' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3E🖼️ Imagen%3C/text%3E%3C/svg%3E" alt="Placeholder">
+                    <button class="image-upload-btn" onclick="uploadImage(this)">📷</button>
+                    <button class="image-delete-btn" title="Eliminar imagen" onclick="removeImageContainer(this)">✕</button>
+                    <input type="file" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+                    <div class="image-resize-handle" title="Arrastrar para redimensionar">↘</div>
+                </div>
+                <button class="image-add-btn" onclick="addImageToSlide(this)">➕ Agregar Imagen</button>
+            </div>
+        </div>
+
+        <!-- SLIDES 4-12 (ESTÁTICOS) -->
+        <!-- Slide 4 -->
+        <div class="slide" data-slide="4">
+            <div class="slide-content">
+                <h2 class="title editable" style="position:absolute;top:8%;left:50%;transform:translateX(-50%);" contenteditable="true">📚 Slide 4</h2>
+                <div class="two-column" style="position:absolute;top:25%;left:50%;transform:translateX(-50%);width:90%;">
+                    <div class="text-box draggable editable" style="position:relative;min-height:250px;" contenteditable="true">
+                        <span class="drag-handle" title="Arrastrar">🎯</span><h3>AGREGAR TEXTO AQUÍ</h3><p>Contenido editable del slide 4</p>
+                    </div>
+                    <div class="image-container draggable" style="position:relative;height:280px;">
+                        <span class="drag-handle" title="Arrastrar">🎯</span>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='280'%3E%3Crect fill='%23f5f5f5' width='400' height='280'/%3E%3Ctext fill='%23999' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EImagen 4%3C/text%3E%3C/svg%3E" alt="Placeholder">
+                        <button class="image-upload-btn" onclick="uploadImage(this)">📷</button>
+                        <button class="image-delete-btn" title="Eliminar imagen" onclick="removeImageContainer(this)">✕</button>
+                        <input type="file" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+                        <div class="image-resize-handle" title="Arrastrar para redimensionar">↘</div>
+                    </div>
+                </div>
+                <button class="image-add-btn" onclick="addImageToSlide(this)">➕ Agregar Imagen</button>
+            </div>
+        </div>
+
+        <!-- Slide 5 -->
+        <div class="slide" data-slide="5">
+            <div class="slide-content">
+                <h2 class="title editable" style="position:absolute;top:8%;left:50%;transform:translateX(-50%);" contenteditable="true">📚 Slide 5</h2>
+                <div class="two-column" style="position:absolute;top:25%;left:50%;transform:translateX(-50%);width:90%;">
+                    <div class="text-box draggable editable" style="position:relative;min-height:250px;" contenteditable="true">
+                        <span class="drag-handle" title="Arrastrar">🎯</span><h3>AGREGAR TEXTO AQUÍ</h3><p>Contenido editable del slide 5</p>
+                    </div>
+                    <div class="image-container draggable" style="position:relative;height:280px;">
+                        <span class="drag-handle" title="Arrastrar">🎯</span>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='280'%3E%3Crect fill='%23f5f5f5' width='400' height='280'/%3E%3Ctext fill='%23999' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EImagen 5%3C/text%3E%3C/svg%3E" alt="Placeholder">
+                        <button class="image-upload-btn" onclick="uploadImage(this)">📷</button>
+                        <button class="image-delete-btn" title="Eliminar imagen" onclick="removeImageContainer(this)">✕</button>
+                        <input type="file" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+                        <div class="image-resize-handle" title="Arrastrar para redimensionar">↘</div>
+                    </div>
+                </div>
+                <button class="image-add-btn" onclick="addImageToSlide(this)">➕ Agregar Imagen</button>
+            </div>
+        </div>
+
+        <!-- Slide 6 -->
+        <div class="slide" data-slide="6">
+            <div class="slide-content">
+                <h2 class="title editable" style="position:absolute;top:8%;left:50%;transform:translateX(-50%);" contenteditable="true">📚 Slide 6</h2>
+                <div class="two-column" style="position:absolute;top:25%;left:50%;transform:translateX(-50%);width:90%;">
+                    <div class="text-box draggable editable" style="position:relative;min-height:250px;" contenteditable="true">
+                        <span class="drag-handle" title="Arrastrar">🎯</span><h3>AGREGAR TEXTO AQUÍ</h3><p>Contenido editable del slide 6</p>
+                    </div>
+                    <div class="image-container draggable" style="position:relative;height:280px;">
+                        <span class="drag-handle" title="Arrastrar">🎯</span>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='280'%3E%3Crect fill='%23f5f5f5' width='400' height='280'/%3E%3Ctext fill='%23999' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EImagen 6%3C/text%3E%3C/svg%3E" alt="Placeholder">
+                        <button class="image-upload-btn" onclick="uploadImage(this)">📷</button>
+                        <button class="image-delete-btn" title="Eliminar imagen" onclick="removeImageContainer(this)">✕</button>
+                        <input type="file" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+                        <div class="image-resize-handle" title="Arrastrar para redimensionar">↘</div>
+                    </div>
+                </div>
+                <button class="image-add-btn" onclick="addImageToSlide(this)">➕ Agregar Imagen</button>
+            </div>
+        </div>
+
+        <!-- Slide 7 -->
+        <div class="slide" data-slide="7">
+            <div class="slide-content">
+                <h2 class="title editable" style="position:absolute;top:8%;left:50%;transform:translateX(-50%);" contenteditable="true">📚 Slide 7</h2>
+                <div class="two-column" style="position:absolute;top:25%;left:50%;transform:translateX(-50%);width:90%;">
+                    <div class="text-box draggable editable" style="position:relative;min-height:250px;" contenteditable="true">
+                        <span class="drag-handle" title="Arrastrar">🎯</span><h3>AGREGAR TEXTO AQUÍ</h3><p>Contenido editable del slide 7</p>
+                    </div>
+                    <div class="image-container draggable" style="position:relative;height:280px;">
+                        <span class="drag-handle" title="Arrastrar">🎯</span>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='280'%3E%3Crect fill='%23f5f5f5' width='400' height='280'/%3E%3Ctext fill='%23999' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EImagen 7%3C/text%3E%3C/svg%3E" alt="Placeholder">
+                        <button class="image-upload-btn" onclick="uploadImage(this)">📷</button>
+                        <button class="image-delete-btn" title="Eliminar imagen" onclick="removeImageContainer(this)">✕</button>
+                        <input type="file" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+                        <div class="image-resize-handle" title="Arrastrar para redimensionar">↘</div>
+                    </div>
+                </div>
+                <button class="image-add-btn" onclick="addImageToSlide(this)">➕ Agregar Imagen</button>
+            </div>
+        </div>
+
+        <!-- Slide 8 -->
+        <div class="slide" data-slide="8">
+            <div class="slide-content">
+                <h2 class="title editable" style="position:absolute;top:8%;left:50%;transform:translateX(-50%);" contenteditable="true">📚 Slide 8</h2>
+                <div class="two-column" style="position:absolute;top:25%;left:50%;transform:translateX(-50%);width:90%;">
+                    <div class="text-box draggable editable" style="position:relative;min-height:250px;" contenteditable="true">
+                        <span class="drag-handle" title="Arrastrar">🎯</span><h3>AGREGAR TEXTO AQUÍ</h3><p>Contenido editable del slide 8</p>
+                    </div>
+                    <div class="image-container draggable" style="position:relative;height:280px;">
+                        <span class="drag-handle" title="Arrastrar">🎯</span>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='280'%3E%3Crect fill='%23f5f5f5' width='400' height='280'/%3E%3Ctext fill='%23999' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EImagen 8%3C/text%3E%3C/svg%3E" alt="Placeholder">
+                        <button class="image-upload-btn" onclick="uploadImage(this)">📷</button>
+                        <button class="image-delete-btn" title="Eliminar imagen" onclick="removeImageContainer(this)">✕</button>
+                        <input type="file" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+                        <div class="image-resize-handle" title="Arrastrar para redimensionar">↘</div>
+                    </div>
+                </div>
+                <button class="image-add-btn" onclick="addImageToSlide(this)">➕ Agregar Imagen</button>
+            </div>
+        </div>
+
+        <!-- Slide 9 -->
+        <div class="slide" data-slide="9">
+            <div class="slide-content">
+                <h2 class="title editable" style="position:absolute;top:8%;left:50%;transform:translateX(-50%);" contenteditable="true">📚 Slide 9</h2>
+                <div class="two-column" style="position:absolute;top:25%;left:50%;transform:translateX(-50%);width:90%;">
+                    <div class="text-box draggable editable" style="position:relative;min-height:250px;" contenteditable="true">
+                        <span class="drag-handle" title="Arrastrar">🎯</span><h3>AGREGAR TEXTO AQUÍ</h3><p>Contenido editable del slide 9</p>
+                    </div>
+                    <div class="image-container draggable" style="position:relative;height:280px;">
+                        <span class="drag-handle" title="Arrastrar">🎯</span>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='280'%3E%3Crect fill='%23f5f5f5' width='400' height='280'/%3E%3Ctext fill='%23999' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EImagen 9%3C/text%3E%3C/svg%3E" alt="Placeholder">
+                        <button class="image-upload-btn" onclick="uploadImage(this)">📷</button>
+                        <button class="image-delete-btn" title="Eliminar imagen" onclick="removeImageContainer(this)">✕</button>
+                        <input type="file" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+                        <div class="image-resize-handle" title="Arrastrar para redimensionar">↘</div>
+                    </div>
+                </div>
+                <button class="image-add-btn" onclick="addImageToSlide(this)">➕ Agregar Imagen</button>
+            </div>
+        </div>
+
+        <!-- Slide 10 -->
+        <div class="slide" data-slide="10">
+            <div class="slide-content">
+                <h2 class="title editable" style="position:absolute;top:8%;left:50%;transform:translateX(-50%);" contenteditable="true">📚 Slide 10</h2>
+                <div class="two-column" style="position:absolute;top:25%;left:50%;transform:translateX(-50%);width:90%;">
+                    <div class="text-box draggable editable" style="position:relative;min-height:250px;" contenteditable="true">
+                        <span class="drag-handle" title="Arrastrar">🎯</span><h3>AGREGAR TEXTO AQUÍ</h3><p>Contenido editable del slide 10</p>
+                    </div>
+                    <div class="image-container draggable" style="position:relative;height:280px;">
+                        <span class="drag-handle" title="Arrastrar">🎯</span>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='280'%3E%3Crect fill='%23f5f5f5' width='400' height='280'/%3E%3Ctext fill='%23999' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EImagen 10%3C/text%3E%3C/svg%3E" alt="Placeholder">
+                        <button class="image-upload-btn" onclick="uploadImage(this)">📷</button>
+                        <button class="image-delete-btn" title="Eliminar imagen" onclick="removeImageContainer(this)">✕</button>
+                        <input type="file" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+                        <div class="image-resize-handle" title="Arrastrar para redimensionar">↘</div>
+                    </div>
+                </div>
+                <button class="image-add-btn" onclick="addImageToSlide(this)">➕ Agregar Imagen</button>
+            </div>
+        </div>
+
+        <!-- Slide 11 -->
+        <div class="slide" data-slide="11">
+            <div class="slide-content">
+                <h2 class="title editable" style="position:absolute;top:8%;left:50%;transform:translateX(-50%);" contenteditable="true">📚 Slide 11</h2>
+                <div class="two-column" style="position:absolute;top:25%;left:50%;transform:translateX(-50%);width:90%;">
+                    <div class="text-box draggable editable" style="position:relative;min-height:250px;" contenteditable="true">
+                        <span class="drag-handle" title="Arrastrar">🎯</span><h3>AGREGAR TEXTO AQUÍ</h3><p>Contenido editable del slide 11</p>
+                    </div>
+                    <div class="image-container draggable" style="position:relative;height:280px;">
+                        <span class="drag-handle" title="Arrastrar">🎯</span>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='280'%3E%3Crect fill='%23f5f5f5' width='400' height='280'/%3E%3Ctext fill='%23999' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EImagen 11%3C/text%3E%3C/svg%3E" alt="Placeholder">
+                        <button class="image-upload-btn" onclick="uploadImage(this)">📷</button>
+                        <button class="image-delete-btn" title="Eliminar imagen" onclick="removeImageContainer(this)">✕</button>
+                        <input type="file" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+                        <div class="image-resize-handle" title="Arrastrar para redimensionar">↘</div>
+                    </div>
+                </div>
+                <button class="image-add-btn" onclick="addImageToSlide(this)">➕ Agregar Imagen</button>
+            </div>
+        </div>
+
+        <!-- Slide 12 -->
+        <div class="slide" data-slide="12">
+            <div class="slide-content">
+                <h2 class="title editable" style="position:absolute;top:8%;left:50%;transform:translateX(-50%);" contenteditable="true">📚 Slide 12 - Conclusiones</h2>
+                <div class="two-column" style="position:absolute;top:25%;left:50%;transform:translateX(-50%);width:90%;">
+                    <div class="text-box draggable editable" style="position:relative;min-height:250px;" contenteditable="true">
+                        <span class="drag-handle" title="Arrastrar">🎯</span><h3>AGREGAR TEXTO AQUÍ</h3><p>Contenido editable del slide 12</p>
+                    </div>
+                    <div class="image-container draggable" style="position:relative;height:280px;">
+                        <span class="drag-handle" title="Arrastrar">🎯</span>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='280'%3E%3Crect fill='%23f5f5f5' width='400' height='280'/%3E%3Ctext fill='%23999' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EImagen 12%3C/text%3E%3C/svg%3E" alt="Placeholder">
+                        <button class="image-upload-btn" onclick="uploadImage(this)">📷</button>
+                        <button class="image-delete-btn" title="Eliminar imagen" onclick="removeImageContainer(this)">✕</button>
+                        <input type="file" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+                        <div class="image-resize-handle" title="Arrastrar para redimensionar">↘</div>
+                    </div>
+                </div>
+                <button class="image-add-btn" onclick="addImageToSlide(this)">➕ Agregar Imagen</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" onclick="previousSlide()">◀ Anterior</button>
+        <span class="slide-counter"><span id="currentSlide">1</span> / 12</span>
+        <button class="nav-btn" onclick="nextSlide()">Siguiente ▶</button>
+    </div>
+
+    <script>
+        // === MODO PRESENTACIÓN (Ctrl+F) ===
+        let presentationMode = false;
+        const modeIndicator = document.getElementById('modeIndicator');
+        
+        function togglePresentationMode() {
+            presentationMode = !presentationMode;
+            document.body.classList.toggle('presentation-mode', presentationMode);
+            modeIndicator.textContent = presentationMode ? '🎬 Modo Presentación' : '✨ Modo Edición';
+            modeIndicator.classList.toggle('presentation', presentationMode);
+            modeIndicator.classList.add('show');
+            setTimeout(() => modeIndicator.classList.remove('show'), 2000);
+            localStorage.setItem('presentationMode', presentationMode);
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+                e.preventDefault();
+                togglePresentationMode();
+            }
+        });
+
+        // === VIDEO DE FONDO - CORREGIDO PARA QUE SIEMPRE SE VEA ===
+        const bgVideo = document.getElementById('bgVideo');
+        const videoFallback = document.getElementById('videoFallback');
+        const videoOverlay = document.getElementById('videoOverlay');
+        const toggleVideoBtn = document.getElementById('toggleVideo');
+        const videoVolume = document.getElementById('videoVolume');
+        const videoOpacity = document.getElementById('videoOpacity');
+        const uploadVideoBtn = document.getElementById('uploadVideo');
+        const removeVideoBtn = document.getElementById('removeVideo'); // NUEVO BOTÓN
+        const videoFileInput = document.getElementById('videoFile');
+        let isVideoPlaying = true;
+        let videoLoaded = false;
+        let videoDisabled = false; // NUEVA VARIABLE: controla si el video está desactivado
+
+        // Lista de URLs de video de respaldo (fallback chain)
+        const videoSources = [
+            'https://cdn.pixabay.com/video/2023/08/15/173843-861842991_large.mp4',
+            'https://assets.mixkit.co/videos/preview/mixkit-abstract-technology-network-background-2688-large.mp4',
+            'https://assets.mixkit.co/videos/preview/mixkit-abstract-technology-network-background-2688-medium.mp4'
+        ];
+        let currentSourceIndex = 0;
+
+        function tryLoadVideo() {
+            if (videoDisabled) return; // No cargar si el usuario desactivó el video
+            if (currentSourceIndex >= videoSources.length) {
+                showFallback();
+                return;
+            }
+            
+            const src = videoSources[currentSourceIndex];
+            bgVideo.src = src;
+            bgVideo.load();
+            
+            bgVideo.play().then(() => {
+                videoLoaded = true;
+                videoFallback.classList.add('hidden');
+                bgVideo.classList.remove('loading', 'error', 'hidden');
+                console.log('✅ Video cargado desde:', src);
+            }).catch(err => {
+                console.log('❌ Error con fuente', currentSourceIndex + 1, ':', err);
+                currentSourceIndex++;
+                setTimeout(tryLoadVideo, 500);
+            });
+        }
+
+        function showFallback() {
+            if (videoDisabled) return;
+            bgVideo.classList.add('error', 'hidden');
+            videoFallback.classList.remove('hidden');
+            const overlayColor = document.getElementById('overlayColor').value;
+            videoOverlay.style.background = `linear-gradient(135deg, ${overlayColor}66 0%, ${adjustColor(overlayColor, -20)}66 100%)`;
+            console.log('🎨 Usando fallback animado');
+        }
+
+        // === NUEVA FUNCIÓN: Alternar video de fondo ===
+        function toggleVideoBackground() {
+            videoDisabled = !videoDisabled;
+            
+            if (videoDisabled) {
+                // Ocultar video y fallback, mostrar solo overlay con color sólido
+                bgVideo.classList.add('hidden');
+                videoFallback.classList.add('hidden');
+                // Mantener overlay visible con el color seleccionado
+                const overlayColor = document.getElementById('overlayColor').value;
+                const opacity = parseFloat(videoOpacity.value);
+                const alpha = Math.round(opacity * 255).toString(16).padStart(2, '0');
+                videoOverlay.style.background = `linear-gradient(135deg, ${overlayColor}${alpha} 0%, ${adjustColor(overlayColor, -20)}${alpha} 100%)`;
+                toggleVideoBtn.textContent = '🎬 Con Video';
+                removeVideoBtn.textContent = '✅ Video Quitado';
+                localStorage.setItem('videoBackgroundDisabled', 'true');
+            } else {
+                // Mostrar video/fallback nuevamente
+                bgVideo.classList.remove('hidden');
+                videoFallback.classList.remove('hidden');
+                if (videoLoaded) {
+                    videoFallback.classList.add('hidden');
+                }
+                toggleVideoBtn.textContent = '⏯️ Video';
+                removeVideoBtn.textContent = '🚫 Sin Video';
+                localStorage.setItem('videoBackgroundDisabled', 'false');
+                // Reintentar cargar video si es necesario
+                if (!videoLoaded) tryLoadVideo();
+            }
+        }
+
+        // Event listener para el nuevo botón
+        removeVideoBtn.addEventListener('click', toggleVideoBackground);
+
+        // Event listeners para el video
+        bgVideo.addEventListener('loadeddata', () => {
+            if (!videoLoaded && !videoDisabled) {
+                videoLoaded = true;
+                videoFallback.classList.add('hidden');
+                bgVideo.classList.remove('loading');
+            }
+        });
+
+        bgVideo.addEventListener('error', (e) => {
+            console.log('❌ Error de video:', e);
+            if (!videoLoaded && !videoDisabled) {
+                currentSourceIndex++;
+                tryLoadVideo();
+            }
+        });
+
+        toggleVideoBtn.addEventListener('click', () => {
+            if (!videoLoaded || videoDisabled) return;
+            if (isVideoPlaying) {
+                bgVideo.pause();
+                bgVideo.classList.add('paused');
+                toggleVideoBtn.textContent = '▶️ Play';
+            } else {
+                bgVideo.play().catch(() => {});
+                bgVideo.classList.remove('paused');
+                toggleVideoBtn.textContent = '⏸️ Pause';
+            }
+            isVideoPlaying = !isVideoPlaying;
+        });
+
+        videoVolume.addEventListener('input', (e) => { 
+            if (videoLoaded && !videoDisabled) bgVideo.volume = e.target.value; 
+        });
+
+        videoOpacity.addEventListener('input', (e) => {
+            const opacity = parseFloat(e.target.value);
+            const overlayColor = document.getElementById('overlayColor').value;
+            const alpha = Math.round(opacity * 255).toString(16).padStart(2, '0');
+            videoOverlay.style.background = `linear-gradient(135deg, ${overlayColor}${alpha} 0%, ${adjustColor(overlayColor, -20)}${alpha} 100%)`;
+        });
+
+        uploadVideoBtn.addEventListener('click', () => videoFileInput.click());
+        
+        videoFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('video/')) {
+                videoDisabled = false; // Reactivar video si se sube uno personalizado
+                removeVideoBtn.textContent = '🚫 Sin Video';
+                localStorage.setItem('videoBackgroundDisabled', 'false');
+                
+                const url = URL.createObjectURL(file);
+                bgVideo.src = url;
+                bgVideo.load();
+                bgVideo.play().then(() => {
+                    videoLoaded = true;
+                    videoFallback.classList.add('hidden');
+                    bgVideo.classList.remove('paused', 'loading', 'error', 'hidden');
+                    toggleVideoBtn.textContent = '⏸️ Pause';
+                    isVideoPlaying = true;
+                    console.log('✅ Video personalizado cargado');
+                }).catch(err => {
+                    console.log('Error con video personalizado:', err);
+                    showFallback();
+                });
+            }
+        });
+
+        // === CONTROLES DE COLOR ===
+        const textColorInput = document.getElementById('textColor');
+        const bgColorInput = document.getElementById('bgColor');
+        const overlayColorInput = document.getElementById('overlayColor');
+        const resetTextBtn = document.getElementById('resetText');
+        const resetBgBtn = document.getElementById('resetBg');
+        const resetOverlayBtn = document.getElementById('resetOverlay');
+        
+        const defaultColors = { text: '#ffffff', bg: '#667eea', overlay: '#667eea' };
+        
+        function loadColors() {
+            const saved = JSON.parse(localStorage.getItem('presentationColors') || '{}');
+            if (saved.text) { textColorInput.value = saved.text; applyTextColor(saved.text); }
+            if (saved.bg) { bgColorInput.value = saved.bg; applyBgColor(saved.bg); }
+            if (saved.overlay) { overlayColorInput.value = saved.overlay; applyOverlayColor(saved.overlay); }
+        }
+        
+        function applyTextColor(color) {
+            document.querySelectorAll('.editable, .title, .subtitle, .vocabulary-word, .vocabulary-definition, .text-box, h2.title').forEach(el => {
+                el.style.color = color;
+            });
+        }
+        
+        function applyBgColor(color) {
+            videoFallback.style.background = `linear-gradient(135deg, ${color} 0%, ${adjustColor(color, -20)} 100%)`;
+            applyOverlayColor(overlayColorInput.value);
+        }
+        
+        function applyOverlayColor(color) {
+            const opacity = parseFloat(videoOpacity.value);
+            const alpha = Math.round(opacity * 255).toString(16).padStart(2, '0');
+            videoOverlay.style.background = `linear-gradient(135deg, ${color}${alpha} 0%, ${adjustColor(color, -20)}${alpha} 100%)`;
+        }
+        
+        function adjustColor(color, amount) {
+            return '#' + color.replace(/^#/, '').replace(/../g, color => 
+                ('0'+Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2)
+            );
+        }
+        
+        textColorInput.addEventListener('input', (e) => { applyTextColor(e.target.value); saveColors(); });
+        bgColorInput.addEventListener('input', (e) => { applyBgColor(e.target.value); saveColors(); });
+        overlayColorInput.addEventListener('input', (e) => { applyOverlayColor(e.target.value); saveColors(); });
+        
+        resetTextBtn.addEventListener('click', () => { textColorInput.value = defaultColors.text; applyTextColor(defaultColors.text); saveColors(); });
+        resetBgBtn.addEventListener('click', () => { bgColorInput.value = defaultColors.bg; applyBgColor(defaultColors.bg); saveColors(); });
+        resetOverlayBtn.addEventListener('click', () => { overlayColorInput.value = defaultColors.overlay; applyOverlayColor(defaultColors.overlay); saveColors(); });
+        
+        function saveColors() {
+            localStorage.setItem('presentationColors', JSON.stringify({
+                text: textColorInput.value, bg: bgColorInput.value, overlay: overlayColorInput.value
+            }));
+        }
+
+        // === CAMBIO DE FUENTE ===
+        const fontSelect = document.getElementById('fontSelect');
+        const resetFontBtn = document.getElementById('resetFont');
+        const defaultFont = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+        
+        function applyFont(fontFamily) {
+            document.querySelectorAll('.editable, .title, .subtitle, .vocabulary-word, .vocabulary-definition, .text-box, h2.title, .nav-btn, .slide-counter, .style-controls, .video-controls, .transition-selector').forEach(el => {
+                el.style.fontFamily = fontFamily;
+            });
+        }
+        
+        fontSelect.addEventListener('change', (e) => {
+            applyFont(e.target.value);
+            localStorage.setItem('presentationFont', e.target.value);
+        });
+        
+        resetFontBtn.addEventListener('click', () => {
+            fontSelect.value = defaultFont;
+            applyFont(defaultFont);
+            localStorage.setItem('presentationFont', defaultFont);
+        });
+        
+        function loadFont() {
+            const savedFont = localStorage.getItem('presentationFont');
+            if (savedFont) {
+                fontSelect.value = savedFont;
+                applyFont(savedFont);
+            }
+        }
+
+        // === TAMAÑO DE LETRA ===
+        const fontSizeSlider = document.getElementById('fontSize');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        let selectedTextElement = null;
+        
+        document.addEventListener('focusin', (e) => {
+            if (e.target.classList.contains('editable') && !presentationMode) {
+                selectedTextElement = e.target;
+                const currentSize = parseInt(window.getComputedStyle(selectedTextElement).fontSize) || 16;
+                fontSizeSlider.value = currentSize;
+                fontSizeValue.textContent = currentSize + 'px';
+            }
+        });
+        
+        fontSizeSlider.addEventListener('input', (e) => {
+            const size = parseInt(e.target.value);
+            fontSizeValue.textContent = size + 'px';
+            
+            if (selectedTextElement && !presentationMode) {
+                selectedTextElement.style.fontSize = size + 'px';
+            } else {
+                document.querySelectorAll('.editable, .title, .subtitle, .vocabulary-word, .vocabulary-definition, .text-box, h2.title, .nav-btn, .slide-counter').forEach(el => {
+                    el.style.fontSize = size + 'px';
+                });
+            }
+            localStorage.setItem('presentationFontSize', size);
+        });
+        
+        function loadFontSize() {
+            const savedSize = localStorage.getItem('presentationFontSize');
+            if (savedSize) {
+                fontSizeSlider.value = savedSize;
+                fontSizeValue.textContent = savedSize + 'px';
+            }
+        }
+
+        // === AGREGAR/QUITAR IMÁGENES ===
+        const addImageBtn = document.getElementById('addImageBtn');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+        
+        function createImageContainer(top, left, width, height) {
+            const container = document.createElement('div');
+            container.className = 'image-container draggable';
+            container.style.cssText = `position:absolute;top:${top};left:${left};width:${width}px;height:${height}px;`;
+            container.innerHTML = `
+                <span class="drag-handle" title="Arrastrar">🎯</span>
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}'%3E%3Crect fill='%23ddd' width='${width}' height='${height}'/%3E%3Ctext fill='%23999' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3E📷 Nueva Imagen%3C/text%3E%3C/svg%3E" alt="Placeholder">
+                <button class="image-upload-btn" onclick="uploadImage(this)">📷 Cambiar</button>
+                <button class="image-delete-btn" title="Eliminar imagen" onclick="removeImageContainer(this)">✕</button>
+                <input type="file" accept="image/*" style="display:none" onchange="handleImageUpload(this)">
+                <div class="image-resize-handle" title="Arrastrar para redimensionar">↘</div>
+            `;
+            return container;
+        }
+        
+        function addImageToSlide(btn) {
+            if (presentationMode) return;
+            const slideContent = btn.closest('.slide-content');
+            const newImg = createImageContainer('40%', '50%', 400, 250);
+            newImg.style.transform = 'translateX(-50%)';
+            slideContent.appendChild(newImg);
+            initDraggables();
+            autoSave();
+        }
+        
+        addImageBtn.addEventListener('click', () => {
+            if (presentationMode) return;
+            const activeSlide = document.querySelector('.slide.active');
+            if (activeSlide) {
+                const slideContent = activeSlide.querySelector('.slide-content');
+                const newImg = createImageContainer('40%', '50%', 400, 250);
+                newImg.style.transform = 'translateX(-50%)';
+                slideContent.appendChild(newImg);
+                initDraggables();
+                autoSave();
+            }
+        });
+        
+        removeImageBtn.addEventListener('click', () => {
+            if (presentationMode || !selectedImageContainer) return;
+            if (confirm('¿Eliminar esta imagen?')) {
+                selectedImageContainer.remove();
+                selectedImageContainer = null;
+                document.querySelectorAll('.image-container').forEach(c => c.classList.remove('selected'));
+                autoSave();
+            }
+        });
+        
+        function removeImageContainer(btn) {
+            if (presentationMode) return;
+            const container = btn.closest('.image-container');
+            if (confirm('¿Eliminar esta imagen?')) {
+                container.remove();
+                if (selectedImageContainer === container) {
+                    selectedImageContainer = null;
+                }
+                autoSave();
+            }
+        }
+
+        // === REDIMENSIONAR IMÁGENES ===
+        const imgWidthSlider = document.getElementById('imgWidth');
+        const imgHeightSlider = document.getElementById('imgHeight');
+        const widthValue = document.getElementById('widthValue');
+        const heightValue = document.getElementById('heightValue');
+        let selectedImageContainer = null;
+        let isResizing = false;
+        let resizeStartX, resizeStartY, resizeStartW, resizeStartH;
+
+        document.querySelectorAll('.image-container').forEach(container => {
+            container.addEventListener('click', (e) => {
+                if (presentationMode || e.target.closest('.image-upload-btn') || e.target.closest('.image-resize-handle') || e.target.closest('.image-delete-btn')) return;
+                document.querySelectorAll('.image-container').forEach(c => c.classList.remove('selected'));
+                container.classList.add('selected');
+                selectedImageContainer = container;
+                const rect = container.getBoundingClientRect();
+                imgWidthSlider.value = rect.width;
+                imgHeightSlider.value = rect.height;
+                widthValue.textContent = Math.round(rect.width);
+                heightValue.textContent = Math.round(rect.height);
+            });
+        });
+
+        imgWidthSlider.addEventListener('input', (e) => {
+            if (selectedImageContainer && !presentationMode) {
+                selectedImageContainer.style.width = e.target.value + 'px';
+                widthValue.textContent = e.target.value;
+            }
+        });
+        imgHeightSlider.addEventListener('input', (e) => {
+            if (selectedImageContainer && !presentationMode) {
+                selectedImageContainer.style.height = e.target.value + 'px';
+                heightValue.textContent = e.target.value;
+            }
+        });
+
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('image-resize-handle') && !presentationMode) {
+                e.preventDefault();
+                selectedImageContainer = e.target.closest('.image-container');
+                isResizing = true;
+                resizeStartX = e.clientX;
+                resizeStartY = e.clientY;
+                resizeStartW = selectedImageContainer.offsetWidth;
+                resizeStartH = selectedImageContainer.offsetHeight;
+                selectedImageContainer.classList.add('selected');
+                document.addEventListener('mousemove', resizeDrag);
+                document.addEventListener('mouseup', resizeStop);
+            }
+        });
+
+        function resizeDrag(e) {
+            if (!isResizing || !selectedImageContainer) return;
+            const dx = e.clientX - resizeStartX;
+            const dy = e.clientY - resizeStartY;
+            const newW = Math.max(100, Math.min(800, resizeStartW + dx));
+            const newH = Math.max(80, Math.min(600, resizeStartH + dy));
+            selectedImageContainer.style.width = newW + 'px';
+            selectedImageContainer.style.height = newH + 'px';
+            imgWidthSlider.value = newW;
+            imgHeightSlider.value = newH;
+            widthValue.textContent = newW;
+            heightValue.textContent = newH;
+        }
+
+        function resizeStop() {
+            isResizing = false;
+            document.removeEventListener('mousemove', resizeDrag);
+            document.removeEventListener('mouseup', resizeStop);
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.image-container') && !e.target.closest('.style-controls')) {
+                document.querySelectorAll('.image-container').forEach(c => c.classList.remove('selected'));
+                selectedImageContainer = null;
+            }
+        });
+
+        // === NAVEGACIÓN DE SLIDES ===
+        let currentSlideIndex = 1, totalSlides = 12, currentTransition = 'page-fade', isTransitioning = false;
+
+        function showSlide(n) {
+            if (isTransitioning) return;
+            isTransitioning = true;
+            const slides = document.querySelectorAll('.slide');
+            const prevIndex = currentSlideIndex;
+            const newIndex = n > totalSlides ? 1 : n < 1 ? totalSlides : n;
+            
+            slides.forEach(slide => {
+                slide.classList.remove('active', 'prev');
+                [...slide.classList].forEach(cls => { if (cls.startsWith('transition-')) slide.classList.remove(cls); });
+            });
+            
+            void document.querySelector('.presentation-container').offsetHeight;
+            slides.forEach(slide => slide.classList.add(`transition-${currentTransition}`));
+            
+            requestAnimationFrame(() => {
+                if (slides[prevIndex - 1]) slides[prevIndex - 1].classList.add('prev');
+                slides[newIndex - 1].classList.add('active');
+                currentSlideIndex = newIndex;
+                document.getElementById('currentSlide').textContent = currentSlideIndex;
+                
+                if (currentTransition === 'explosion') createExplosionEffect();
+                else if (currentTransition === 'matrix') createMatrixEffect();
+                else if (currentTransition === 'glitch') createGlitchParticles();
+                
+                setTimeout(() => { slides.forEach(slide => slide.classList.remove('prev')); isTransitioning = false; }, 1500);
+            });
+        }
+
+        function nextSlide() { showSlide(currentSlideIndex + 1); }
+        function previousSlide() { showSlide(currentSlideIndex - 1); }
+        function changeTransition(type) { currentTransition = type; localStorage.setItem('presentationTransition', type); }
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') return;
+            if (e.key === 'ArrowRight') nextSlide();
+            if (e.key === 'ArrowLeft') previousSlide();
+        });
+
+        // === CANVAS PARA EFECTOS ESPECIALES ===
+        const canvas = document.getElementById('transitionCanvas'), ctx = canvas.getContext('2d');
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+
+        function createExplosionEffect() {
+            const particles = [];
+            for (let i = 0; i < 120; i++) {
+                particles.push({ x: canvas.width/2, y: canvas.height/2, vx: (Math.random()-0.5)*35, vy: (Math.random()-0.5)*35, life: 1, color: `hsl(${Math.random()*60+240},100%,60%)`, size: Math.random()*10+3 });
+            }
+            function animate() {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                let active = false;
+                particles.forEach(p => {
+                    if (p.life > 0) { active = true; p.x += p.vx; p.y += p.vy; p.vy += 0.6; p.life -= 0.025; ctx.globalAlpha = p.life; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill(); }
+                });
+                if (active) requestAnimationFrame(animate); else { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.globalAlpha = 1; }
+            }
+            animate();
+        }
+
+        function createMatrixEffect() {
+            const chars = '01abcxyz', fontSize = 14, columns = Math.floor(canvas.width/fontSize);
+            const drops = Array(columns).fill(0).map(() => Math.random()*-100);
+            let frames = 0;
+            function draw() {
+                ctx.fillStyle = 'rgba(0,0,0,0.08)'; ctx.fillRect(0,0,canvas.width,canvas.height);
+                ctx.fillStyle = '#0F0'; ctx.font = `${fontSize}px monospace`;
+                for (let i = 0; i < drops.length; i++) {
+                    ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*fontSize, drops[i]*fontSize);
+                    if (drops[i]*fontSize > canvas.height && Math.random() > 0.97) drops[i] = 0;
+                    drops[i]++;
+                }
+                if (++frames < 60) requestAnimationFrame(draw); else { ctx.clearRect(0,0,canvas.width,canvas.height); }
+            }
+            draw();
+        }
+
+        function createGlitchParticles() {
+            const particles = [];
+            for (let i = 0; i < 80; i++) {
+                particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*20, vy: (Math.random()-0.5)*20, life: 0.8, color: `hsl(${Math.random()*360},100%,50%)`, size: Math.random()*4+1 });
+            }
+            function animate() {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                let active = false;
+                particles.forEach(p => {
+                    if (p.life > 0) { active = true; p.x += p.vx + (Math.random()-0.5)*3; p.y += p.vy; p.life -= 0.03; ctx.globalAlpha = p.life; ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, p.size, p.size*2); }
+                });
+                if (active) requestAnimationFrame(animate); else { ctx.clearRect(0,0,canvas.width,canvas.height); ctx.globalAlpha = 1; }
+            }
+            animate();
+        }
+
+        // === DRAG & DROP ===
+        let draggedElement = null, offsetX = 0, offsetY = 0;
+        function initDraggables() {
+            document.querySelectorAll('.draggable').forEach(elem => {
+                const handle = elem.querySelector('.drag-handle');
+                if (handle) { handle.addEventListener('mousedown', startDrag); handle.addEventListener('touchstart', startDrag, {passive:false}); }
+            });
+        }
+        function startDrag(e) {
+            if (presentationMode) return;
+            e.preventDefault(); e.stopPropagation();
+            if (document.activeElement?.isContentEditable) return;
+            draggedElement = this.closest('.draggable'); if (!draggedElement) return;
+            const clientX = e.type==='touchstart'?e.touches[0].clientX:e.clientX;
+            const clientY = e.type==='touchstart'?e.touches[0].clientY:e.clientY;
+            const rect = draggedElement.getBoundingClientRect();
+            offsetX = clientX - rect.left; offsetY = clientY - rect.top;
+            draggedElement.classList.add('dragging'); draggedElement.style.transition = 'none';
+            document.addEventListener('mousemove', drag); document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchmove', drag, {passive:false}); document.addEventListener('touchend', stopDrag);
+        }
+        function drag(e) {
+            if (!draggedElement) return; e.preventDefault();
+            const clientX = e.type==='touchmove'?e.touches[0].clientX:e.clientX;
+            const clientY = e.type==='touchmove'?e.touches[0].clientY:e.clientY;
+            const parentRect = draggedElement.parentElement.getBoundingClientRect();
+            draggedElement.style.left = (clientX - parentRect.left - offsetX) + 'px';
+            draggedElement.style.top = (clientY - parentRect.top - offsetY) + 'px';
+            draggedElement.style.transform = 'none'; draggedElement.style.right = 'auto'; draggedElement.style.bottom = 'auto';
+        }
+        function stopDrag() {
+            if (draggedElement) { draggedElement.classList.remove('dragging'); draggedElement.style.transition = 'box-shadow 0.2s'; draggedElement = null; }
+            document.removeEventListener('mousemove', drag); document.removeEventListener('mouseup', stopDrag);
+            document.removeEventListener('touchmove', drag); document.removeEventListener('touchend', stopDrag);
+        }
+
+        // === IMÁGENES ===
+        function uploadImage(btn) { if (!presentationMode) btn.nextElementSibling.click(); }
+        function handleImageUpload(input) {
+            if (input.files?.[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => { input.closest('.image-container').querySelector('img').src = e.target.result; };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // === AUTO-GUARDADO ===
+        let saveTimeout;
+        function autoSave() {
+            if (presentationMode) return;
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => { localStorage.setItem('presentationTemplate_v13', document.querySelector('.presentation-container').innerHTML); }, 2000);
+        }
+        document.addEventListener('input', e => { if (e.target.isContentEditable && !presentationMode) autoSave(); });
+
+        // === INICIALIZACIÓN ===
+        window.addEventListener('load', () => {
+            const savedMode = localStorage.getItem('presentationMode') === 'true';
+            if (savedMode) { presentationMode = true; document.body.classList.add('presentation-mode'); }
+            
+            // === CARGAR PREFERENCIA DE VIDEO ===
+            const videoDisabledSaved = localStorage.getItem('videoBackgroundDisabled');
+            if (videoDisabledSaved === 'true') {
+                videoDisabled = true;
+                bgVideo.classList.add('hidden');
+                videoFallback.classList.add('hidden');
+                toggleVideoBtn.textContent = '🎬 Con Video';
+                removeVideoBtn.textContent = '✅ Video Quitado';
+            }
+            
+            loadColors();
+            loadFont();
+            loadFontSize();
+            
+            // Cargar video solo si no está desactivado
+            if (!videoDisabled) {
+                bgVideo.classList.add('loading');
+                tryLoadVideo();
+            }
+            
+            document.querySelectorAll('.slide').forEach(slide => { slide.classList.add(`transition-${currentTransition}`); });
+            initDraggables();
+            
+            const savedT = localStorage.getItem('presentationTransition');
+            if (savedT) { currentTransition = savedT; document.getElementById('transitionType').value = savedT; }
+            
+            const saved = localStorage.getItem('presentationTemplate_v13');
+            if (saved && !presentationMode && confirm('🔄 ¿Cargar presentación guardada?')) {
+                document.querySelector('.presentation-container').innerHTML = saved;
+                initDraggables(); loadColors(); loadFont(); loadFontSize();
+            }
+        });
+    </script>
+</body>
+</html>
